@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Added by me
+run
+frontend/node_modules
+backend/src/main/resources/static/js/bundle
