@@ -1,0 +1,29 @@
+.grid-square {
+  rect.fillable {
+    fill: #FFFFFF;
+  }
+  rect.block {
+    fill: #000000;
+  }
+  .grid-square-number {
+    font-family: Roboto, Sans-serif;
+    font-size: 10px;
+    color: #555555;
+  }
+  .grid-square-fill {
+    font-family: Roboto, Sans-serif;
+    font-size: 16px;
+    color: #000000;
+
+    text-anchor: middle;
+  }
+}
+
+.grid-border {
+  fill: none;
+  stroke: #000000;
+}
+
+.grid-lines {
+  stroke: #555555;
+}
