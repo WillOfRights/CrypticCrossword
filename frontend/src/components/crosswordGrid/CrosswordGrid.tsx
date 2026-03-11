@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import {GRID_BORDER_OUTLINE_SIZE, GRID_SQUARE_SIZE,} from './CrosswordGridConstants';
 import {PuzzleSquare, SquareType,} from './CrosswordGridTypes';
@@ -60,7 +60,7 @@ function createGridSquares(puzzleSquares: PuzzleSquare[][]) {
             gridSquares.push(
                 <GridSquare
                     isBlock={isBlock}
-                    fill={isBlock || puzzleSquare.fill}
+                    fill={isBlock ? undefined : puzzleSquare.fill}
                     offsetDim={{x: colIdx, y: rowIdx}}
                     key={`${rowIdx}-${colIdx}`}
                 />

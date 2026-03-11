@@ -1,5 +1,5 @@
 import './CrosswordGrid.scss';
-import React from 'react';
+import * as React from 'react';
 
 import {
     GRID_BORDER_OUTLINE_SIZE,
@@ -18,7 +18,7 @@ interface GridBorderProps {
 };
 
 
-function GridBorder({ squaresWidth, squaresHeight }: CrosswordGridBorderProps) {
+function GridBorder({ squaresWidth, squaresHeight }: GridBorderProps) {
     // Half grid thickness
     const hgt = GRID_BORDER_OUTLINE_SIZE / 2;
 

@@ -1,0 +1,26 @@
+.clue-panel {
+  width: 300px;
+  height: 100px;
+  border: 2px solid black;
+  box-sizing: border-box;
+
+  display: flex;
+}
+
+.across-clues {
+  width: 50%;
+  margin: 2px 0 0 2px;
+  overflow: scroll;
+}
+
+.down-clues {
+  width: 50%;
+  margin: 2px 0 0 0;
+  overflow: scroll;
+}
+
+.clue-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

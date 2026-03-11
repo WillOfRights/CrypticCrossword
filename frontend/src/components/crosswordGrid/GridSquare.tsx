@@ -1,5 +1,5 @@
 import './CrosswordGrid.scss';
-import React from 'react';
+import * as React from 'react';
 
 import {
     GRID_BORDER_OUTLINE_SIZE,
