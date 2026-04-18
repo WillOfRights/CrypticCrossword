@@ -36,3 +36,4 @@ target/
 /run
 /frontend/node_modules
 /backend/src/main/resources/static/js/bundle
+/backend/baseline-crypticCrossword.xml
