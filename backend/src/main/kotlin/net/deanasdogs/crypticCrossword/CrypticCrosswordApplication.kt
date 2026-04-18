@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class CrypticCrosswordApplication
 
 fun main(args: Array<String>) {
-	runApplication<CrypticCrosswordApplication>(*args)
+    runApplication<CrypticCrosswordApplication>(*args)
 }

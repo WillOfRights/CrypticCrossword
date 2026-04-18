@@ -1,4 +1,4 @@
-package net.deanasdogs.crypticCrossword.homePage.controllers
+package net.deanasdogs.crypticCrossword.controllers.homepage
 
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -7,7 +7,5 @@ import org.springframework.web.bind.annotation.GetMapping
 @Controller
 class HomePageController {
     @GetMapping("/")
-    fun home(model: Model): String {
-        return "homePage";
-    }
+    fun home(model: Model): String = "homePage"
 }
