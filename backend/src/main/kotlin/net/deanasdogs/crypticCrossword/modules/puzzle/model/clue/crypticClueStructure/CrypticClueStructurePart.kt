@@ -5,7 +5,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.IgnoredCluePart
 
 /**
- * A part of the full structure of a cryptic clue: includes definitions, wordplay, and link words.
+ * A part of the full structure of a cryptic clue: such as a definition, wordplay, or a link word.
  */
 sealed class CrypticClueStructurePart() {
     abstract val crypticClueParts: List<CrypticCluePart>

@@ -3,6 +3,7 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePar
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.ParentListPart
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStructure.CrypticClueStructure
 
 @Serializable
 @SerialName("doubleDefinition")
@@ -16,7 +17,7 @@ data class CrypticDoubleDefinition(override val clueText: String, override val c
         // Only definitions and non-indicator text allowed
         {
             crypticCluePart: CrypticCluePart ->
-            crypticCluePart !is CrypticDefinition && crypticCluePart !is CrypticNonIndicatorText
+            !(crypticCluePart is CrypticDefinition || crypticCluePart is CrypticNonIndicatorText)
         } to ParentListPart.Companion.AllowedChildPredicateType.NONE,
 
         // Must be exactly one primary definition
@@ -35,7 +36,7 @@ data class CrypticDoubleDefinition(override val clueText: String, override val c
     init {
         validateChildClueParts()
     }
-    override fun getCrypticClueStructure(): net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStructure.CrypticClueStructure {
+    override fun getCrypticClueStructure(): CrypticClueStructure {
         TODO("Not yet implemented")
     }
 
