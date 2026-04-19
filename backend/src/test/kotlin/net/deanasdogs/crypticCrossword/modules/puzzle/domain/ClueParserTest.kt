@@ -16,40 +16,45 @@ import org.springframework.boot.test.context.SpringBootTest
 import java.util.stream.Stream
 
 @SpringBootTest
-class ClueParserTest (@Autowired private val clueParser: ClueParser) {
+class ClueParserTest(
+    @Autowired private val clueParser: ClueParser,
+) {
     companion object {
         @JvmStatic
-        fun basicIntegrationTestCases(): Stream<Arguments> {
-            return Stream.of(
+        fun basicIntegrationTestCases(): Stream<Arguments> =
+            Stream.of(
                 // Double definition
                 Arguments.of(
-                    "Double definition", "Def1 def2", "FOO",
+                    "Double definition",
+                    "Def1 def2",
+                    "FOO",
                     """{"type":"doubleDefinition", "clueText":"Def1 def2", "children":
                         |[
-                            |{"type":"definition", "clueText":"Def1"},
+                            |{"type":"definition", "clueText":"Def1", "answerYield": "FOO"},
                             |{"type":"nonIndicatorText", "clueText":" "},
-                            |{"type":"definition", "clueText":"Def2", "isPrimaryDefinition":"false"}
-                        |]}""".trimMargin(),
+                            |{"type":"definition", "clueText":"Def2", "answerYield": "FOO", "isPrimaryDefinition":"false"}
+                        |]}
+                    """.trimMargin(),
                     CrypticDoubleDefinition(
                         clueText = "Def1 def2",
-                        children = listOf(
-                            CrypticDefinition("Def1"),
-                            CrypticNonIndicatorText(" "),
-                            CrypticDefinition("Def2", isPrimaryDefinition = false),
-                        )
-                    )
-                )
+                        children =
+                            listOf(
+                                CrypticDefinition("Def1", "FOO"),
+                                CrypticNonIndicatorText(" "),
+                                CrypticDefinition("Def2", "FOO", isPrimaryDefinition = false),
+                            ),
+                    ),
+                ),
             )
-        }
 
         fun formatParseErrors(
             testCaseName: String,
             clueText: String,
             answer: String,
             baseCrypticClueJson: String,
-            errors: List<ClueParseError>): String
-        {
-            return buildString {
+            errors: List<ClueParseError>,
+        ): String =
+            buildString {
                 appendLine("Parsing test case $testCaseName")
                 appendLine("* Clue text: $clueText")
                 appendLine("* Answer: $answer")
@@ -60,7 +65,6 @@ class ClueParserTest (@Autowired private val clueParser: ClueParser) {
                     appendLine(error.errorString)
                 }
             }
-        }
     }
 
     @ParameterizedTest(name = "Parse {0}")
@@ -70,12 +74,20 @@ class ClueParserTest (@Autowired private val clueParser: ClueParser) {
         clueText: String,
         answer: String,
         baseCrypticClueJson: String,
-        baseCrypticCluePart: BaseCrypticCluePart)
-    {
+        baseCrypticCluePart: BaseCrypticCluePart,
+    ) {
         val parsedClueResult = clueParser.parseCrypticClue(clueText, answer, baseCrypticClueJson)
 
         Assertions.assertFalse(parsedClueResult is ParseResult.Failure)
-        { formatParseErrors(testCaseName, clueText, answer, baseCrypticClueJson, (parsedClueResult as ParseResult.Failure).errors) }
+            {
+                formatParseErrors(
+                    testCaseName,
+                    clueText,
+                    answer,
+                    baseCrypticClueJson,
+                    (parsedClueResult as ParseResult.Failure).errors,
+                )
+            }
 
         val parsedClue = (parsedClueResult as ParseResult.Success).value
         // Trivial checks
@@ -84,7 +96,6 @@ class ClueParserTest (@Autowired private val clueParser: ClueParser) {
 
         // Substantive check
         Assertions.assertEquals(parsedClue.baseCrypticCluePart, baseCrypticCluePart)
-        { "DTO parsed did not match what was expected by test case." }
+            { "DTO parsed did not match what was expected by test case." }
     }
-
 }
