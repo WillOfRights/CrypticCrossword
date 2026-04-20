@@ -28,20 +28,19 @@ class ClueParserTest(
                     "Double definition",
                     "Def1 def2",
                     "FOO",
-                    """{"type":"doubleDefinition", "clueText":"Def1 def2", "children":
+                    """{"type":"doubleDefinition", "children":
                         |[
                             |{"type":"definition", "clueText":"Def1", "answerYield": "FOO"},
                             |{"type":"nonIndicatorText", "clueText":" "},
-                            |{"type":"definition", "clueText":"Def2", "answerYield": "FOO", "isPrimaryDefinition":"false"}
+                            |{"type":"definition", "clueText":"def2", "answerYield": "FOO", "isPrimaryDefinition":"false"}
                         |]}
                     """.trimMargin(),
                     CrypticDoubleDefinition(
-                        clueText = "Def1 def2",
                         children =
                             listOf(
                                 CrypticDefinition("Def1", "FOO"),
                                 CrypticNonIndicatorText(" "),
-                                CrypticDefinition("Def2", "FOO", isPrimaryDefinition = false),
+                                CrypticDefinition("def2", "FOO", isPrimaryDefinition = false),
                             ),
                     ),
                 ),

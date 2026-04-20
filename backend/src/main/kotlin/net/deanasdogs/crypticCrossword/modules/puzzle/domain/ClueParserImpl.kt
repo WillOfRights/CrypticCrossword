@@ -26,12 +26,6 @@ class ClueParserImpl : ClueParser {
             )
         }
 
-        if (baseCrypticCluePart !is CrypticClueStructurable) {
-            errors.add(
-                ClueParseError("Top level cryptic clue part must be structurable")
-            )
-        }
-
         if (!errors.isEmpty()) {
             return ParseResult.Failure(errors)
         }

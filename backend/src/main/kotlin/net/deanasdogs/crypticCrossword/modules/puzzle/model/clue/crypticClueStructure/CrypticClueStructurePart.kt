@@ -12,11 +12,13 @@ sealed class CrypticClueStructurePart() {
 
     data class DefinitionStep(override val crypticClueParts: List<CrypticCluePart>): CrypticClueStructurePart() {
         init {
-            require(crypticClueParts.stream()
-                .allMatch {
+            require(crypticClueParts
+                .all {
                     crypticCluePart -> crypticCluePart is CrypticDefinition || crypticCluePart is IgnoredCluePart
                 }
-            )
+            ) {
+                "All parts of a definition step must be a definition or an ignored clue part."
+            }
         }
     }
 }

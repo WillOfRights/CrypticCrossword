@@ -14,7 +14,7 @@ data class CrypticDefinition(
     val answerYield: String,
     val isPrimaryDefinition: Boolean = true,
 ) : CrypticCluePart(), YieldableCluePart {
-    override fun getYieldedAnswer(): String {
+    override fun getYield(): String {
         return answerYield
     }
 }
