@@ -1,5 +1,6 @@
 package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.CrypticClueStructurable
@@ -8,10 +9,10 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStructure.CrypticClueStructure
 
 /**
- * A double definition cryptic crossword clue.
+ * A standard cryptic clue: with a definition and wordplay.
  */
 @Serializable
-@SerialName("doubleDefinition")
+@SerialName("definitionAndWordplay")
 data class CrypticDefinitionAndWordplay(override val children: List<CrypticCluePart>)
     : BaseCrypticCluePart(), ParentCluePart, YieldableCluePart, CrypticClueStructurable
 {
@@ -20,6 +21,7 @@ data class CrypticDefinitionAndWordplay(override val children: List<CrypticClueP
         // Validate that the children match the predicate we expect.
         validateChildClueParts {
             it is CrypticDefinition
+                    || it is CrypticWordplay
                     || it is CrypticNonIndicatorText
                     || it is CrypticLinkWord
         }
@@ -28,30 +30,30 @@ data class CrypticDefinitionAndWordplay(override val children: List<CrypticClueP
     override val clueText: String = defaultClueText
 
     /**
-     * Primary definition of this double definition.
+     * Definition part of this clue.
      */
-    private val primaryDefinition: CrypticDefinition = ParentCluePart.getOnlyChild(children) {
-        it is CrypticDefinition && it.isPrimaryDefinition
-    }
-
-
-    /**
-     * Secondary definition of this double definition.
-     */
-    private val secondaryDefinition: CrypticDefinition = ParentCluePart.getOnlyChild(children) {
-            it is CrypticDefinition && it.isPrimaryDefinition
+    private val definition: CrypticDefinition = ParentCluePart.getOnlyChild(children) {
+        it is CrypticDefinition
     }
 
     /**
-     * Optional link word between definitions.
+     * Wordplay part of this clue.
+     */
+    @Contextual
+    private val wordplay: CrypticWordplay = ParentCluePart.getOnlyChild(children) {
+        it is CrypticWordplay
+    }
+
+    /**
+     * Optional link word(s) between definition and wordplay.
      */
     private val linkWord: CrypticLinkWord? = ParentCluePart.getOptionalChild(children) {
         it is CrypticLinkWord
     }
 
     init {
-        require(primaryDefinition.yield == secondaryDefinition.yield) {
-            "The yielded answer from both definitions must match."
+        require(definition.yield == wordplay.yield) {
+            "The yielded answer from the definition and wordplay must match"
         }
     }
 
@@ -59,6 +61,6 @@ data class CrypticDefinitionAndWordplay(override val children: List<CrypticClueP
         TODO("Not yet implemented")
     }
 
-    override val yield: String = primaryDefinition.yield
+    override val yield: String = definition.yield
 
 }
