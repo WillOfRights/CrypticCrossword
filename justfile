@@ -13,7 +13,8 @@ LINT_FRONTEND:="cd frontend && npx eslint ."
 
 # Spring and backend build scripts/goals
 SPRING_RUN:="cd backend && ./mvnw spring-boot:run"
-WATCH_BACKEND:="cd backend && watchexec -w src/main/resources/static/js/bundle --postpone -d 1s -e mustache,js,css './mvnw resources:resources'"
+WATCH_RESOURCES:="cd backend && watchexec -w src/main/resources/static/js/bundle --postpone -d 1s -e mustache,js,css './mvnw resources:resources'"
+WATCH_BACKEND_SRC:= "cd backend && watchexec -w src/main/kotlin --postpone -d 1s -e kt './mvnw compile'"
 FORMAT_BACKEND:="cd backend && ./mvnw spotless:apply"
 LINT_BACKEND:="cd backend && ./mvnw spotbugs:check"
 DEBUG_SUFFIX_BACKEND:="-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"
@@ -29,8 +30,11 @@ run: stop (frontend-build "production")
 
 run-dev: stop (frontend-build "development")
   @echo "Starting local server and file watchers for development"
-  @overmind start -D -s {{SOCKET_FILE}} -x spring_boot_debug
+  @overmind start -D -s {{SOCKET_FILE}} --any-can-die -x spring_boot_debug
   @echo "Local server started"
+
+connect:
+  @overmind c -s {{SOCKET_FILE}}
 
 debug: stop (frontend-build "production")
   @echo "Starting local run and listening for debugger on port 5005"
