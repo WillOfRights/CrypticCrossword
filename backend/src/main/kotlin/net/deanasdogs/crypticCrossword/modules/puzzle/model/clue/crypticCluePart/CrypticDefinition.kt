@@ -11,10 +11,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 @SerialName("definition")
 data class CrypticDefinition(
     override val clueText: String,
-    val answerYield: String,
+    override val yield: String,
     val isPrimaryDefinition: Boolean = true,
 ) : CrypticCluePart(), YieldableCluePart {
-    override fun getYield(): String {
-        return answerYield
-    }
 }

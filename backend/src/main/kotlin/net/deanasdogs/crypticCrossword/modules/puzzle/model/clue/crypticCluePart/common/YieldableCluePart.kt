@@ -5,7 +5,7 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePar
  */
 interface YieldableCluePart {
     /**
-     * Get the letters yielded by this clue part.
+     * Letters yielded by this clue part.
      */
-    fun getYield(): String
+    val yield: String
 }

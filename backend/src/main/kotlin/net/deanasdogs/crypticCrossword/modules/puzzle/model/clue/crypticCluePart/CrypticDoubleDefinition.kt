@@ -7,6 +7,9 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.YieldableCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStructure.CrypticClueStructure
 
+/**
+ * A double definition cryptic crossword clue.
+ */
 @Serializable
 @SerialName("doubleDefinition")
 data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
@@ -15,7 +18,11 @@ data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
 
     init {
         // Validate that the children match the predicate we expect.
-        validateChildClueParts(allowedChildrenPredicate)
+        validateChildClueParts {
+            it is CrypticDefinition
+                    || it is CrypticNonIndicatorText
+                    || it is CrypticLinkWord
+        }
     }
     // Clue text is default clue text from joining children
     override val clueText: String = defaultClueText
@@ -23,23 +30,27 @@ data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
     /**
      * Primary definition of this double definition.
      */
-    private val primaryDefinition: CrypticDefinition =
-        ParentCluePart.Companion.getOnlyChild(children, primaryDefinitionPredicate)
+    private val primaryDefinition: CrypticDefinition = ParentCluePart.getOnlyChild(children) {
+        it is CrypticDefinition && it.isPrimaryDefinition
+    }
+
 
     /**
      * Secondary definition of this double definition.
      */
-    private val secondaryDefinition: CrypticDefinition =
-        ParentCluePart.Companion.getOnlyChild(children, secondaryDefinitionPredicate)
+    private val secondaryDefinition: CrypticDefinition = ParentCluePart.getOnlyChild(children) {
+            it is CrypticDefinition && !it.isPrimaryDefinition
+    }
 
     /**
-     * Optional link word between definitions.
+     * Optional link word(s) between definition and wordplay.
      */
-    private val linkWord: CrypticLinkWord? =
-        ParentCluePart.Companion.getOptionalChild(children, linkWordPredicate)
+    private val linkWord: CrypticLinkWord? = ParentCluePart.getOptionalChild(children) {
+        it is CrypticLinkWord
+    }
 
     init {
-        require(primaryDefinition.getYield() == secondaryDefinition.getYield()) {
+        require(primaryDefinition.yield == secondaryDefinition.yield) {
             "The yielded answer from both definitions must match."
         }
     }
@@ -48,40 +59,6 @@ data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
         TODO("Not yet implemented")
     }
 
-    override fun getYield(): String = primaryDefinition.getYield()
-
-    companion object {
-        /**
-         * Predicate for allowed children.
-         */
-        private val allowedChildrenPredicate: (CrypticCluePart) -> Boolean =
-            {
-                it is CrypticDefinition
-                        || it is CrypticNonIndicatorText
-                        || it is CrypticLinkWord
-            }
-
-        /**
-         * Predicate for the primary definition.
-         */
-        private val primaryDefinitionPredicate: (CrypticCluePart) -> Boolean = {
-            it is CrypticDefinition && it.isPrimaryDefinition
-        }
-
-        /**
-         * Predicate for the secondary definition.
-         */
-        private val secondaryDefinitionPredicate: (CrypticCluePart) -> Boolean = {
-            it is CrypticDefinition && !it.isPrimaryDefinition
-        }
-
-        /**
-         * Predicate for link word.
-         */
-        private val linkWordPredicate: (CrypticCluePart) -> Boolean = {
-            it is CrypticLinkWord
-        }
-
-    }
+    override val yield: String = primaryDefinition.yield
 
 }
