@@ -8,7 +8,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 /**
  * A part of the full structure of a cryptic clue: such as a definition, wordplay, or a link word.
  */
-sealed class CrypticClueStructurePart() {
+sealed class CrypticClueStructurePart {
     abstract val crypticClueParts: List<CrypticCluePart>
 
     data class DefinitionStep(override val crypticClueParts: List<CrypticCluePart>): CrypticClueStructurePart() {

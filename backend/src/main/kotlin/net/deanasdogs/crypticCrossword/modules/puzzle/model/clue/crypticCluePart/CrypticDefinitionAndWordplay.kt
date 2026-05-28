@@ -7,6 +7,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.ParentCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.YieldableCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStructure.CrypticClueStructure
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStructure.CrypticClueStructurePart
 
 /**
  * A standard cryptic clue: with a definition and wordplay.
@@ -58,7 +59,25 @@ data class CrypticDefinitionAndWordplay(override val children: List<CrypticClueP
     }
 
     override fun getCrypticClueStructure(): CrypticClueStructure {
-        TODO("Not yet implemented")
+        val wordplayStep = CrypticClueStructurePart.WordplayStep(children.map {
+            it as? CrypticWordplay ?: IgnoredCluePart(it)
+        })
+
+        val linkWordStep = linkWord?.let {
+            CrypticClueStructurePart.DefinitionStep(children.map {
+                it as? CrypticLinkWord ?: IgnoredCluePart(it)
+            })
+        }
+
+        val definitionStep = CrypticClueStructurePart.DefinitionStep(children.map {
+            it as? CrypticDefinition ?: IgnoredCluePart(it)
+        })
+
+        return CrypticClueStructure(listOfNotNull(
+            wordplayStep,
+            linkWordStep,
+            definitionStep,
+        ))
     }
 
     override val yield: String = definition.yield
