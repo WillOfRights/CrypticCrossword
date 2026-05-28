@@ -8,6 +8,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticDefinitionAndWordplay
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticDoubleDefinition
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticJuxtaposition
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticJuxtapositionIndicator
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticLinkWord
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticNonIndicatorText
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticSynonym
@@ -64,11 +65,11 @@ class ClueParserTest(
                     "Double definition",
                     "Def1 def2",
                     "FOO",
-                    """{"type":"doubleDefinition", "children":
+                    """{"type": "doubleDefinition", "children":
                         |[
-                            |{"type":"definition", "clueText":"Def1", "yield": "FOO"},
-                            |{"type":"nonIndicatorText", "clueText":" "},
-                            |{"type":"definition", "clueText":"def2", "yield": "FOO", "isPrimaryDefinition":"false"}
+                            |{"type": "definition", "clueText": "Def1", "yield": "FOO"},
+                            |{"type": "nonIndicatorText", "clueText": " "},
+                            |{"type": "definition", "clueText": "def2", "yield": "FOO", "isPrimaryDefinition": "false"}
                         |]}
                     """.trimMargin(),
                     CrypticDoubleDefinition(
@@ -86,13 +87,13 @@ class ClueParserTest(
                     "Double definition with link word",
                     "Def1 link def2",
                     "FOO",
-                    """{"type":"doubleDefinition", "children":
+                    """{"type": "doubleDefinition", "children":
                         |[
-                            |{"type":"definition", "clueText":"Def1", "yield": "FOO"},
-                            |{"type":"nonIndicatorText", "clueText":" "},
-                            |{"type":"linkWord", "clueText":"link"},
-                            |{"type":"nonIndicatorText", "clueText":" "},
-                            |{"type":"definition", "clueText":"def2", "yield": "FOO", "isPrimaryDefinition":"false"}
+                            |{"type": "definition", "clueText": "Def1", "yield": "FOO"},
+                            |{"type": "nonIndicatorText", "clueText": " "},
+                            |{"type": "linkWord", "clueText": "link"},
+                            |{"type": "nonIndicatorText", "clueText": " "},
+                            |{"type": "definition", "clueText": "def2", "yield": "FOO", "isPrimaryDefinition": "false"}
                         |]}
                     """.trimMargin(),
                     CrypticDoubleDefinition(
@@ -107,21 +108,20 @@ class ClueParserTest(
                     ),
                 ),
 
-
                 // Cryptic juxtaposition without indicator
                 Arguments.of(
                     "Cryptic juxtaposition",
                     "Def1 foo bar",
                     "FOOBAR",
-                    """{"type":"definitionAndWordplay", "children":
+                    """{"type": "definitionAndWordplay", "children":
                         |[
-                            |{"type":"definition", "clueText":"Def1", "yield": "FOOBAR"},
-                            |{"type":"nonIndicatorText", "clueText":" "},
-                            |{"type":"crypticJuxtaposition", "children":
+                            |{"type": "definition", "clueText": "Def1", "yield": "FOOBAR"},
+                            |{"type": "nonIndicatorText", "clueText": " "},
+                            |{"type": "crypticJuxtaposition", "children":
                                 |[
-                                    |{"type":"crypticSynonym", "clueText": "foo", "yield": "FOO" },
-                                    |{"type":"nonIndicatorText", "clueText":" "},
-                                    |{"type":"crypticSynonym", "clueText": "bar", "yield": "BAR" }
+                                    |{"type": "crypticSynonym", "clueText": "foo", "yield": "FOO" },
+                                    |{"type": "nonIndicatorText", "clueText": " "},
+                                    |{"type": "crypticSynonym", "clueText": "bar", "yield": "BAR" }
                             |]}
                         |]}
                     """.trimMargin(),
@@ -132,6 +132,41 @@ class ClueParserTest(
                                 CrypticNonIndicatorText(" "),
                                 CrypticJuxtaposition(listOf(
                                     CrypticSynonym("foo", "FOO"),
+                                    CrypticNonIndicatorText(" "),
+                                    CrypticSynonym("bar", "BAR"),
+                                )),
+                            ),
+                    ),
+                ),
+
+                // Cryptic juxtaposition with indicator
+                Arguments.of(
+                    "Cryptic juxtaposition with indicator",
+                    "Def1 foo after bar",
+                    "BARFOO",
+                    """{"type": "definitionAndWordplay", "children":
+                        |[
+                            |{"type": "definition", "clueText": "Def1", "yield": "BARFOO"},
+                            |{"type": "nonIndicatorText", "clueText": " "},
+                            |{"type": "crypticJuxtaposition", "children":
+                                |[
+                                    |{"type": "crypticSynonym", "clueText": "foo", "yield": "FOO" },
+                                    |{"type": "nonIndicatorText", "clueText": " "},
+                                    |{"type": "crypticJuxtapositionIndicator", "clueText": "after", "isBefore": "false"},
+                                    |{"type": "nonIndicatorText", "clueText": " "},
+                                    |{"type": "crypticSynonym", "clueText": "bar", "yield": "BAR" }
+                            |]}
+                        |]}
+                    """.trimMargin(),
+                    CrypticDefinitionAndWordplay(
+                        children =
+                            listOf(
+                                CrypticDefinition("Def1", "BARFOO"),
+                                CrypticNonIndicatorText(" "),
+                                CrypticJuxtaposition(listOf(
+                                    CrypticSynonym("foo", "FOO"),
+                                    CrypticNonIndicatorText(" "),
+                                    CrypticJuxtapositionIndicator("after", false),
                                     CrypticNonIndicatorText(" "),
                                     CrypticSynonym("bar", "BAR"),
                                 )),

@@ -6,6 +6,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.ParentCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.YieldableCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStructure.CrypticClueStructure
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStructure.CrypticClueStructurePart
 
 /**
  * A double definition cryptic crossword clue.
@@ -56,7 +57,31 @@ data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
     }
 
     override fun getCrypticClueStructure(): CrypticClueStructure {
-        TODO("Not yet implemented")
+        val primaryDefinitionStep = CrypticClueStructurePart.DefinitionStep(children.map {
+            if (it is CrypticDefinition && it.isPrimaryDefinition)
+                it
+            else
+                IgnoredCluePart(it)
+        })
+
+        val linkWordStep = linkWord?.let {
+            CrypticClueStructurePart.DefinitionStep(children.map {
+                it as? CrypticLinkWord ?: IgnoredCluePart(it)
+            })
+        }
+
+        val secondaryDefinitionStep = CrypticClueStructurePart.DefinitionStep(children.map {
+            if (it is CrypticDefinition && !it.isPrimaryDefinition)
+                it
+            else
+                IgnoredCluePart(it)
+        })
+
+        return CrypticClueStructure(listOfNotNull(
+            primaryDefinitionStep,
+            linkWordStep,
+            secondaryDefinitionStep,
+        ))
     }
 
     override val yield: String = primaryDefinition.yield

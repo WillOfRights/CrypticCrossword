@@ -12,7 +12,8 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 data class CrypticJuxtaposition(
     override val children: List<CrypticCluePart>,
 ) : CrypticWordplay(),
-    ParentCluePart {
+    ParentCluePart,
+    CrypticIndicable<CrypticJuxtaposition> {
     init {
         // Validate that the children match the predicate we expect.
         validateChildClueParts {
@@ -31,7 +32,7 @@ data class CrypticJuxtaposition(
         }
 
     init {
-        if (indicator != null && !indicator.before) {
+        if (indicator != null && !indicator.isBefore) {
             assert(children.filterIsInstance<CrypticWordplay>().size == 2) {
                 "If a juxtaposition indicator is used that places the first part after the second, there should be " +
                     "exactly two children."
@@ -42,10 +43,9 @@ data class CrypticJuxtaposition(
     // The yield is the yield of all the child wordplays combined, or the second before the first if there is a
     // before indicator.
     override val yield: String =
-        if (indicator != null && !indicator.before) {
+        if (indicator != null && !indicator.isBefore) {
             children
-                .filterIsInstance<CrypticWordplay>()[1]
-                .yield
+                .filterIsInstance<CrypticWordplay>()[1].yield
                 .plus(children.filterIsInstance<CrypticWordplay>()[0].yield)
         } else {
             children.filterIsInstance<CrypticWordplay>().joinToString(separator="") { it.yield }
@@ -59,5 +59,5 @@ data class CrypticJuxtaposition(
 @SerialName("crypticJuxtapositionIndicator")
 data class CrypticJuxtapositionIndicator(
     override val clueText: String,
-    val before: Boolean = true,
-) : CrypticCluePart()
+    val isBefore: Boolean = true,
+) : CrypticIndicator<CrypticJuxtaposition>()

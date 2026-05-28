@@ -2,6 +2,7 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStr
 
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticDefinition
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.CrypticWordplay
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.IgnoredCluePart
 
 /**
@@ -18,6 +19,18 @@ sealed class CrypticClueStructurePart() {
                 }
             ) {
                 "All parts of a definition step must be a definition or an ignored clue part."
+            }
+        }
+    }
+
+    data class WordplayStep(override val crypticClueParts: List<CrypticCluePart>): CrypticClueStructurePart() {
+        init {
+            require(crypticClueParts
+                .all {
+                        crypticCluePart -> crypticCluePart is CrypticWordplay || crypticCluePart is IgnoredCluePart
+                }
+            ) {
+                "All parts of a wordplay step must be wordplay, an indicator, or an ignored clue part."
             }
         }
     }
