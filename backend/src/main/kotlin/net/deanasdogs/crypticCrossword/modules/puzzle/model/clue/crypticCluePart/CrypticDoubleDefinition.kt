@@ -14,7 +14,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueStru
 @Serializable
 @SerialName("doubleDefinition")
 data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
-    : BaseCrypticCluePart(), ParentCluePart, YieldableCluePart, CrypticClueStructurable
+    : BaseCrypticCluePart(), ParentCluePart
 {
 
     init {
