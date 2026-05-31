@@ -1,6 +1,5 @@
 package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.CrypticClueStructurable
@@ -40,7 +39,6 @@ data class CrypticDefinitionAndWordplay(override val children: List<CrypticClueP
     /**
      * Wordplay part of this clue.
      */
-    @Contextual
     private val wordplay: CrypticWordplay = ParentCluePart.getOnlyChild(children) {
         it is CrypticWordplay
     }
