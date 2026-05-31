@@ -24,6 +24,9 @@ import java.util.stream.Stream
 class ClueParserTest(
     @Autowired private val clueParser: ClueParser,
 ) {
+    /**
+     * Basic integration test cases for the functionality of the ClueParser.
+     */
     @ParameterizedTest(name = "Parse {0}")
     @MethodSource("basicIntegrationTestCases")
     fun basicClueIntegrationTests(
