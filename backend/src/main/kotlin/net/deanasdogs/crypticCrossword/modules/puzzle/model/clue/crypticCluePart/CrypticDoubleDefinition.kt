@@ -2,6 +2,9 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePar
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanation
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanationPart
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanationStep
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.CrypticClueStructurable
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.ParentCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.YieldableCluePart
@@ -56,6 +59,8 @@ data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
         }
     }
 
+    override val yield: String = primaryDefinition.yield
+
     override fun getCrypticClueStructure(): CrypticClueStructure {
         val primaryDefinitionStep = CrypticClueStructurePart.DefinitionStep(children.map {
             if (it is CrypticDefinition && it.isPrimaryDefinition)
@@ -84,6 +89,12 @@ data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
         ))
     }
 
-    override val yield: String = primaryDefinition.yield
+    override fun getExplanation(): CrypticClueExplanation {
+        val firstStep = CrypticClueExplanationStep(
+            clueText,
+            listOfNotNull(),
+            listOfNotNull(),
+        )
+    }
 
 }

@@ -2,6 +2,7 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePar
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanation
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.CrypticClueStructurable
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.ParentCluePart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.YieldableCluePart
@@ -56,6 +57,8 @@ data class CrypticDefinitionAndWordplay(override val children: List<CrypticClueP
         }
     }
 
+    override val yield: String = definition.yield
+
     override fun getCrypticClueStructure(): CrypticClueStructure {
         val wordplayStep = CrypticClueStructurePart.WordplayStep(children.map {
             it as? CrypticWordplay ?: IgnoredCluePart(it)
@@ -78,6 +81,7 @@ data class CrypticDefinitionAndWordplay(override val children: List<CrypticClueP
         ))
     }
 
-    override val yield: String = definition.yield
+    override fun getExplanation(): CrypticClueExplanation {
 
+    }
 }
