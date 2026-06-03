@@ -48,6 +48,17 @@ sealed class CrypticClueExplanationPart {
     }
 
     /**
+     * Selected part(s) in part of an explanation for a cryptic clue, containing a list of other parts.
+     */
+    @SerialName("CrypticExplanationSelected")
+    data class ExplanationSelectedPart(
+        override val text: String,
+        val containedParts: List<CrypticClueExplanationPart>)
+        : CrypticClueExplanationPart() {
+        override val isYieldedText = false
+    }
+
+    /**
      * Yielded text in part of an explanation for a cryptic clue.
      */
     @SerialName("CrypticExplanationYield")
