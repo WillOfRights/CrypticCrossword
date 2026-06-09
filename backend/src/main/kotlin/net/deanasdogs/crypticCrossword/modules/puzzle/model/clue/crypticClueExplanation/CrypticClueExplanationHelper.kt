@@ -1,10 +1,7 @@
-package net.deanasdogs.crypticCrossword.modules.puzzle.domain
-
-import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanationPart
-import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanationStep
+package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation
 
 /**
- * An object with common utilities for creating and manipulating `CrypticClueExplanationHelper`s.
+ * An object with common utilities for creating and manipulating `CrypticClueExplanation`s.
  */
 object CrypticClueExplanationHelper {
     /**
