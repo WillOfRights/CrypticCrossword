@@ -4,7 +4,7 @@ import net.deanasdogs.crypticCrossword.modules.core.parse.ParseResult
 import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.CrypticClue
 
 /**
- * Abstract interface to convert clues to relevant models and DTOs.
+ * Abstract interface to convert clues to `CrypticClue` model.
  */
 interface ClueParser {
     fun parseCrypticClue(

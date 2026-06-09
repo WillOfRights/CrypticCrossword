@@ -8,7 +8,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.CrypticClue
 import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticCluePart.BaseCrypticCluePart
 
 /**
- * Default implementation of clue parser. Parses clue from db into CrypticClue model and into DTOs for frontend.
+ * Default implementation of clue parser. Parses clue from db into `CrypticClue` model.
  */
 class ClueParserImpl : ClueParser {
     override fun parseCrypticClue(
