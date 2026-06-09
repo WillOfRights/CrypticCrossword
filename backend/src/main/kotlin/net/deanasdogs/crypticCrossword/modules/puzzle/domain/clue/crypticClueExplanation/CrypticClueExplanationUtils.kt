@@ -3,7 +3,7 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueEx
 /**
  * An object with common utilities for creating and manipulating `CrypticClueExplanation`s.
  */
-object CrypticClueExplanationHelper {
+object CrypticClueExplanationUtils {
     /**
      * Private enum for merging explanation part types based on clue vs. yield parts.
      */
