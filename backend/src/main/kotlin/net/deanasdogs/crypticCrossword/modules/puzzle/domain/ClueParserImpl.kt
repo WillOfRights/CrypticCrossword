@@ -4,9 +4,8 @@ import kotlinx.serialization.json.Json
 import net.deanasdogs.crypticCrossword.modules.core.parse.ParseResult
 import net.deanasdogs.crypticCrossword.modules.puzzle.api.ClueParseError
 import net.deanasdogs.crypticCrossword.modules.puzzle.api.ClueParser
-import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.CrypticClue
-import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.BaseCrypticCluePart
-import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePart.common.CrypticClueStructurable
+import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.CrypticClue
+import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticCluePart.BaseCrypticCluePart
 
 /**
  * Default implementation of clue parser. Parses clue from db into CrypticClue model and into DTOs for frontend.
