@@ -2,6 +2,7 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticCluePar
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.explanationNode.SimpleWordplayExplanationNode
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanation
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanationPart
 import net.deanasdogs.crypticCrossword.modules.puzzle.model.clue.crypticClueExplanation.CrypticClueExplanationStep
@@ -90,11 +91,7 @@ data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
     }
 
     override fun getExplanation(): CrypticClueExplanation {
-        val firstStep = CrypticClueExplanationStep(
-            clueText,
-            listOfNotNull(),
-            listOfNotNull(),
-        )
+
     }
 
 }
