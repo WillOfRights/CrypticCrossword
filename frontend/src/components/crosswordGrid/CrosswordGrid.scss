@@ -1,9 +1,17 @@
 .grid-square {
-  rect.fillable {
-    fill: #FFFFFF;
-  }
-  rect.block {
-    fill: #000000;
+  rect {
+    &.block {
+      fill: #000000;
+    }
+    &.clue-highlighted {
+      fill: #fffddd;
+    }
+    &.focused-square {
+      fill: #f9c9be;
+    }
+    &.fillable {
+      fill: #ffffff;
+    }
   }
   .grid-square-number {
     font-family: Roboto, Sans-serif;

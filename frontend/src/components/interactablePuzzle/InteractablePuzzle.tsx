@@ -2,7 +2,7 @@ import './InteractablePuzzle.scss';
 import * as React from 'react';
 
 import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
-import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
+import { HighlightType, PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue } from "../cluePanel/CluePanelTypes";
 
@@ -28,8 +28,8 @@ function InteractablePuzzle() {
  */
 function fakeData() {
     const puzzleSquares: PuzzleSquare[][] = [
-        [SquareType.BLOCK, { squareType: SquareType.FILLABLE, fill: 'C' }],
-        [{ squareType: SquareType.FILLABLE, fill: 'R' }, SquareType.BLOCK],
+        [SquareType.BLOCK, { squareType: SquareType.FILLABLE, fill: 'C', highlightType: HighlightType.CLUE_HIGHLIGHTED }],
+        [{ squareType: SquareType.FILLABLE, fill: 'R', highlightType: HighlightType.FOCUSED_SQUARE }, SquareType.BLOCK],
     ];
     const acrossCluePanelClues: CluePanelClue[] = [
         { clueText: 'What is H', number: 1, isAnswered: false },

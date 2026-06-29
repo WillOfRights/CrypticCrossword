@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import {GRID_BORDER_OUTLINE_SIZE, GRID_SQUARE_SIZE,} from './CrosswordGridConstants';
-import {PuzzleSquare, SquareType,} from './CrosswordGridTypes';
+import { GRID_BORDER_OUTLINE_SIZE, GRID_SQUARE_SIZE, } from './CrosswordGridConstants';
+import { PuzzleSquare, SquareType, } from './CrosswordGridTypes';
 import GridSquare from './GridSquare';
 import GridBorder from './GridBorder';
 import GridLines from './GridLines';
@@ -38,8 +38,7 @@ function CrosswordGrid({ puzzleSquares }: CrosswordGridProps) {
  */
 function validateProps({ puzzleSquares }: CrosswordGridProps) {
     if (puzzleSquares.length === 0
-        || puzzleSquares.some(puzzleSquareRow => puzzleSquareRow.length != puzzleSquares.length))
-    {
+        || puzzleSquares.some(puzzleSquareRow => puzzleSquareRow.length != puzzleSquares.length)) {
         // Puzzle squares have zero length or not a uniform grid
         return false;
     }
@@ -54,15 +53,16 @@ function createGridSquares(puzzleSquares: PuzzleSquare[][]) {
     const rowLength = puzzleSquares[0].length;
 
     for (let rowIdx = 0; rowIdx < puzzleSquares.length; rowIdx++) {
-        for(let colIdx = 0; colIdx < rowLength; colIdx++) {
+        for (let colIdx = 0; colIdx < rowLength; colIdx++) {
             const puzzleSquare = puzzleSquares[rowIdx][colIdx];
             const isBlock = puzzleSquare === SquareType.BLOCK;
             gridSquares.push(
                 <GridSquare
                     isBlock={isBlock}
                     fill={isBlock ? undefined : puzzleSquare.fill}
-                    offsetDim={{x: colIdx, y: rowIdx}}
+                    offsetDim={{ x: colIdx, y: rowIdx }}
                     key={`${rowIdx}-${colIdx}`}
+                    highlightType={isBlock ? undefined : puzzleSquare.highlightType}
                 />
             );
         }
