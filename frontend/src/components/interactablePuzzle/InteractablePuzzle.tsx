@@ -10,7 +10,7 @@ import { CluePanelClue } from "../cluePanel/CluePanelTypes";
 import { InteractablePuzzleFocusState } from "./InteractablePuzzleTypes";
 import { getHighlightablePuzzleSquares, getSquareCluesArray } from "./InteractablePuzzleUtils";
 
-const DEFAULT_FOCUS_STATE = { rowIdx: 1, colIdx: 1, direction: ClueDirection.ACROSS, clueNumber: 1 };
+const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACROSS, clueNumber: 1 };
 
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
