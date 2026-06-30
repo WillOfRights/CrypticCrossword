@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { GRID_BORDER_OUTLINE_SIZE, GRID_SQUARE_SIZE, } from './CrosswordGridConstants';
-import { PuzzleSquare, SquareType, } from './CrosswordGridTypes';
+import { HighlightablePuzzleSquare, SquareType, } from './CrosswordGridTypes';
 import GridSquare from './GridSquare';
 import GridBorder from './GridBorder';
 import GridLines from './GridLines';
@@ -10,7 +10,7 @@ interface CrosswordGridProps {
     /**
      * 2D Array of all the puzzle squares, first stored by column and then row.
      */
-    puzzleSquares: PuzzleSquare[][],
+    puzzleSquares: HighlightablePuzzleSquare[][],
 }
 
 /**
@@ -46,9 +46,9 @@ function validateProps({ puzzleSquares }: CrosswordGridProps) {
 }
 
 /**
- * Create the list of grid square objects for the given puzzle squares.
+ * Create the list of grid square objects for the given highlightable puzzle squares.
  */
-function createGridSquares(puzzleSquares: PuzzleSquare[][]) {
+function createGridSquares(puzzleSquares: HighlightablePuzzleSquare[][]) {
     const gridSquares: React.ReactElement[] = [];
     const rowLength = puzzleSquares[0].length;
 
@@ -60,6 +60,7 @@ function createGridSquares(puzzleSquares: PuzzleSquare[][]) {
                 <GridSquare
                     isBlock={isBlock}
                     fill={isBlock ? undefined : puzzleSquare.fill}
+                    number={isBlock ? undefined : puzzleSquare.number}
                     offsetDim={{ x: colIdx, y: rowIdx }}
                     key={`${rowIdx}-${colIdx}`}
                     highlightType={isBlock ? undefined : puzzleSquare.highlightType}

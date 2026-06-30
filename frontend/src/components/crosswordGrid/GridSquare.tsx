@@ -29,7 +29,8 @@ interface GridSquareProps {
         y: number,
     },
     /**
-     * The highlight type of this square, or undefined if this is not applicable. Not compatible with `isBlock`.
+     * The highlight type of this square, or undefined if this is not applicable. If `isBlock` is true, this does
+     * nothing.
      */
     highlightType?: HighlightType,
 }

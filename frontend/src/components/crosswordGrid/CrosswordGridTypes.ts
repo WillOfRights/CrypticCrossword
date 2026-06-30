@@ -1,3 +1,8 @@
+enum ClueDirection {
+    ACROSS,
+    DOWN,
+}
+
 enum SquareType {
     /**
      * A blocked off square.
@@ -13,8 +18,32 @@ enum SquareType {
     VERIFIED,
 }
 
+type LetterSquare = {
+    squareType: SquareType.FILLABLE | SquareType.VERIFIED,
+    fill: String,
+    number?: number,
+}
+
 /**
- * For squares containing letters, indicates the different highlight states that can occur.
+ * Type representing a square in a puzzle, not including information on user interactions.
+ */
+type PuzzleSquare = LetterSquare | SquareType.BLOCK;
+
+/**
+ * Type representing the clues that an individual (letter type) square is part of.
+ */
+type LetterSquareClues = {
+    across?: number,
+    down?: number,
+}
+
+/**
+ * Type representing the clues that an individual square is part of.
+ */
+type SquareClues = LetterSquareClues | SquareType.BLOCK;
+
+/**
+ * For all squares, indicates the different highlight states that can occur.
  */
 enum HighlightType {
     /**
@@ -31,20 +60,20 @@ enum HighlightType {
     FOCUSED_SQUARE,
 }
 
-type LetterSquare = {
-    squareType: SquareType.FILLABLE | SquareType.VERIFIED,
-    fill: String,
-    highlightType: HighlightType,
+/**
+ * Type representing a puzzle square as well as information about whether it is highlighted.
+ */
+type HighlightablePuzzleSquare = SquareType.BLOCK | LetterSquare & {
+    highlightType?: HighlightType,
 }
 
-/**
- * Type representing a square in a puzzle
- */
-type PuzzleSquare = LetterSquare | SquareType.BLOCK;
-
 export {
+    ClueDirection,
     SquareType,
-    HighlightType,
     LetterSquare,
     PuzzleSquare,
+    SquareClues,
+    LetterSquareClues,
+    HighlightType,
+    HighlightablePuzzleSquare,
 };
