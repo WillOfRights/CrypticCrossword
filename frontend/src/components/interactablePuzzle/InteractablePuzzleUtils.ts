@@ -8,17 +8,23 @@ export function getHighlightablePuzzleSquares(
   puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
   focusState: InteractablePuzzleFocusState): PuzzleSquareWithHighlight[][] {
   if (focusState === InteractablePuzzleUnfocused.NOT_FOCUSED) {
-    return puzzleSquareWithCluesArray.map((rowSquareClues) => rowSquareClues.map((puzzleSquare) => {
-      if (puzzleSquare === SquareType.BLOCK) {
+    return puzzleSquareWithCluesArray.map((rowPuzzleSquareWithClues) => rowPuzzleSquareWithClues.map((puzzleSquareWithClues) => {
+      if (puzzleSquareWithClues === SquareType.BLOCK) {
         return SquareType.BLOCK;
       }
+
+      const puzzleSquare = {
+        squareType: puzzleSquareWithClues.squareType,
+        fill: puzzleSquareWithClues.fill,
+        number: puzzleSquareWithClues.number,
+      };
       return {
         ...puzzleSquare,
         highlightType: HighlightType.UNHIGHLIGHTED,
       }
     }));
   }
-  return puzzleSquareWithCluesArray.map((rowSquareClues, rowIdx) => rowSquareClues.map((puzzleSquareWithClues, colIdx) => {
+  return puzzleSquareWithCluesArray.map((rowPuzzleSquareWithClues, rowIdx) => rowPuzzleSquareWithClues.map((puzzleSquareWithClues, colIdx) => {
     if (puzzleSquareWithClues === SquareType.BLOCK) {
       return SquareType.BLOCK;
     }
