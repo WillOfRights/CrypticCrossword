@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { GRID_BORDER_OUTLINE_SIZE, GRID_SQUARE_SIZE, } from './CrosswordGridConstants';
-import { HighlightablePuzzleSquare, SquareType, } from './CrosswordGridTypes';
+import { PuzzleSquareWithHighlight, SquareType, } from './CrosswordGridTypes';
 import GridSquare from './GridSquare';
 import GridBorder from './GridBorder';
 import GridLines from './GridLines';
@@ -10,7 +10,7 @@ interface CrosswordGridProps {
     /**
      * 2D Array of all the puzzle squares, first stored by column and then row.
      */
-    puzzleSquares: HighlightablePuzzleSquare[][],
+    puzzleSquares: PuzzleSquareWithHighlight[][],
 }
 
 /**
@@ -48,7 +48,7 @@ function validateProps({ puzzleSquares }: CrosswordGridProps) {
 /**
  * Create the list of grid square objects for the given highlightable puzzle squares.
  */
-function createGridSquares(puzzleSquares: HighlightablePuzzleSquare[][]) {
+function createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][]) {
     const gridSquares: React.ReactElement[] = [];
     const rowLength = puzzleSquares[0].length;
 
