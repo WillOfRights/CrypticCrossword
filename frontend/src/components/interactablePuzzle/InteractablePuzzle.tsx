@@ -3,20 +3,19 @@ import * as React from 'react';
 const { useState } = React;
 
 import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
-import { ClueDirection, PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
+import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue } from "../cluePanel/CluePanelTypes";
 
-import { InteractablePuzzleFocusState } from "./InteractablePuzzleTypes";
 import { getHighlightablePuzzleSquares, getSquareCluesArray } from "./InteractablePuzzleUtils";
+import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
 
-const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACROSS, clueNumber: 1 };
 
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
  */
 function InteractablePuzzle() {
-    const [focusState, setFocusState] = useState<InteractablePuzzleFocusState>(DEFAULT_FOCUS_STATE);
+    const { focusState } = useInteractablePuzzleNavigation();
 
     const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
     const squareCluesArray = getSquareCluesArray(puzzleSquares);
