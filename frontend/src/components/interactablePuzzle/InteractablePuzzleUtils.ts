@@ -22,26 +22,32 @@ export function getHighlightablePuzzleSquares(
     if (puzzleSquareWithClues === SquareType.BLOCK) {
       return SquareType.BLOCK;
     }
+
+    const puzzleSquare = {
+      squareType: puzzleSquareWithClues.squareType,
+      fill: puzzleSquareWithClues.fill,
+      number: puzzleSquareWithClues.number,
+    };
     if (rowIdx === focusState.rowIdx && colIdx === focusState.colIdx) {
       return {
-        ...puzzleSquareWithClues,
+        ...puzzleSquare,
         highlightType: HighlightType.FOCUSED_SQUARE,
       }
     }
     if (focusState.direction === ClueDirection.ACROSS && focusState.clueNumber === puzzleSquareWithClues.acrossClueNumber) {
       return {
-        ...puzzleSquareWithClues,
+        ...puzzleSquare,
         highlightType: HighlightType.CLUE_HIGHLIGHTED,
       }
     }
     if (focusState.direction === ClueDirection.DOWN && focusState.clueNumber === puzzleSquareWithClues.downClueNumber) {
       return {
-        ...puzzleSquareWithClues,
+        ...puzzleSquare,
         highlightType: HighlightType.CLUE_HIGHLIGHTED,
       }
     }
     return {
-      ...puzzleSquareWithClues,
+      ...puzzleSquare,
       highlightType: HighlightType.UNHIGHLIGHTED,
     }
   }));
@@ -52,6 +58,7 @@ export function getHighlightablePuzzleSquares(
  */
 export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): PuzzleSquareWithClues[][] {
   const puzzleSquareWithCluesArray: PuzzleSquareWithClues[][] = [];
+
   for (var rowIdx = 0; rowIdx < puzzleSquares.length; rowIdx++) {
     const rowSquareClues: PuzzleSquareWithClues[] = [];
     for (var colIdx = 0; colIdx < puzzleSquares[rowIdx].length; colIdx++) {
@@ -66,7 +73,7 @@ export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): PuzzleSqua
       var acrossClueNumber: number | undefined, downClueNumber: number | undefined;
       if (colIdx > 0) {
         const squareLeftOfCurrent = rowSquareClues[colIdx - 1];
-        if (squareLeftOfCurrent != SquareType.BLOCK) {
+        if (squareLeftOfCurrent !== SquareType.BLOCK) {
           acrossClueNumber = squareLeftOfCurrent.acrossClueNumber;
         }
         else {
@@ -78,7 +85,7 @@ export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): PuzzleSqua
       }
       if (rowIdx > 0) {
         const squareAboveCurrent = puzzleSquareWithCluesArray[rowIdx - 1][colIdx];
-        if (squareAboveCurrent != SquareType.BLOCK) {
+        if (squareAboveCurrent !== SquareType.BLOCK) {
           downClueNumber = squareAboveCurrent.downClueNumber;
         }
         else {
