@@ -17,7 +17,7 @@ function InteractablePuzzle() {
     const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares);
 
-    const { focusState } = useInteractablePuzzleNavigation(puzzleSquares, puzzleSquareWithCluesArray);
+    const { focusState } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
 
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focusState);
 
