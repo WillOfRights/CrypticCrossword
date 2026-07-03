@@ -30,17 +30,17 @@ type LetterSquare = {
 type PuzzleSquare = LetterSquare | SquareType.BLOCK;
 
 /**
- * Type representing the clues that an individual (letter type) square is part of.
+ * Type representing a letter square as well as the clues that the individual square is part of.
  */
-type LetterSquareClues = {
-    across?: number,
-    down?: number,
+type LetterSquareWithClues = LetterSquare & {
+    acrossClueNumber?: number,
+    downClueNumber?: number,
 }
 
 /**
- * Type representing the clues that an individual square is part of.
+ * Type representing any square as well as it's clue information.
  */
-type SquareClues = LetterSquareClues | SquareType.BLOCK;
+type PuzzleSquareWithClues = LetterSquareWithClues | SquareType.BLOCK;
 
 /**
  * For all squares, indicates the different highlight states that can occur.
@@ -63,7 +63,7 @@ enum HighlightType {
 /**
  * Type representing a puzzle square as well as information about whether it is highlighted.
  */
-type HighlightablePuzzleSquare = SquareType.BLOCK | LetterSquare & {
+type PuzzleSquareWithHighlight = SquareType.BLOCK | LetterSquare & {
     highlightType?: HighlightType,
 }
 
@@ -72,8 +72,8 @@ export {
     SquareType,
     LetterSquare,
     PuzzleSquare,
-    SquareClues,
-    LetterSquareClues,
+    PuzzleSquareWithClues,
+    LetterSquareWithClues,
     HighlightType,
-    HighlightablePuzzleSquare,
+    PuzzleSquareWithHighlight,
 };

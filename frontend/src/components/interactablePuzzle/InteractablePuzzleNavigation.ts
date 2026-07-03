@@ -1,7 +1,7 @@
 import * as React from 'react';
 const { useState } = React;
 
-import { ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
+import { ClueDirection, PuzzleSquare, PuzzleSquareWithClues, } from "../crosswordGrid/CrosswordGridTypes";
 import { InteractablePuzzleFocusState } from "./InteractablePuzzleTypes";
 
 const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACROSS, clueNumber: 1 };
@@ -9,7 +9,7 @@ const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACR
 /**
   * Hook for navigation of the `InteractablePuzzle` component.
   */
-function useInteractablePuzzleNavigation() {
+function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquareWithClues[][]) {
   const [focusState, setFocusState] = useState<InteractablePuzzleFocusState>(DEFAULT_FOCUS_STATE);
 
   return {

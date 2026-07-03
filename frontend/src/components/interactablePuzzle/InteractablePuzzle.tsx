@@ -1,6 +1,5 @@
 import './InteractablePuzzle.scss';
 import * as React from 'react';
-const { useState } = React;
 
 import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
 import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
@@ -15,11 +14,12 @@ import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation"
  * An interactable puzzle on the site, including a grid, clues, and hint section.
  */
 function InteractablePuzzle() {
-    const { focusState } = useInteractablePuzzleNavigation();
-
     const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
-    const squareCluesArray = getSquareCluesArray(puzzleSquares);
-    const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquares, squareCluesArray, focusState);
+    const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares);
+
+    const { focusState } = useInteractablePuzzleNavigation(puzzleSquares, puzzleSquareWithCluesArray);
+
+    const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focusState);
 
     return (
         <div className={'interactable-puzzle'}>

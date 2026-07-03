@@ -1,17 +1,14 @@
-import { PuzzleSquare, HighlightType, SquareClues, SquareType, ClueDirection, HighlightablePuzzleSquare } from "../crosswordGrid/CrosswordGridTypes";
+import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight } from "../crosswordGrid/CrosswordGridTypes";
 import { InteractablePuzzleFocusState, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
 
 /**
  * Get the highlightable puzzle squares as a 2d array based on the focus state of the interactable puzzle.
- * Requires the `squaresClueArray` generated from `puzzleSquares` to be passed for convenience and optimization, see
- * `getSquareCluesArray`.
  */
 export function getHighlightablePuzzleSquares(
-  puzzleSquares: PuzzleSquare[][],
-  squareCluesArray: SquareClues[][],
-  focusState: InteractablePuzzleFocusState): HighlightablePuzzleSquare[][] {
+  puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
+  focusState: InteractablePuzzleFocusState): PuzzleSquareWithHighlight[][] {
   if (focusState === InteractablePuzzleUnfocused.NOT_FOCUSED) {
-    return puzzleSquares.map((rowSquareClues) => rowSquareClues.map((puzzleSquare) => {
+    return puzzleSquareWithCluesArray.map((rowSquareClues) => rowSquareClues.map((puzzleSquare) => {
       if (puzzleSquare === SquareType.BLOCK) {
         return SquareType.BLOCK;
       }
@@ -21,34 +18,30 @@ export function getHighlightablePuzzleSquares(
       }
     }));
   }
-  return squareCluesArray.map((rowSquareClues, rowIdx) => rowSquareClues.map((squareClues, colIdx) => {
-    const puzzleSquare = puzzleSquares[rowIdx][colIdx];
-    if (puzzleSquare === SquareType.BLOCK || squareClues === SquareType.BLOCK) {
-      if ((puzzleSquare === SquareType.BLOCK) !== (squareClues === SquareType.BLOCK)) {
-        throw new Error(`At row index ${rowIdx} and column index ${colIdx}, a mismatch was detected between puzzleSquares and squareCluesArray.`);
-      }
+  return puzzleSquareWithCluesArray.map((rowSquareClues, rowIdx) => rowSquareClues.map((puzzleSquareWithClues, colIdx) => {
+    if (puzzleSquareWithClues === SquareType.BLOCK) {
       return SquareType.BLOCK;
     }
     if (rowIdx === focusState.rowIdx && colIdx === focusState.colIdx) {
       return {
-        ...puzzleSquare,
+        ...puzzleSquareWithClues,
         highlightType: HighlightType.FOCUSED_SQUARE,
       }
     }
-    if (focusState.direction === ClueDirection.ACROSS && focusState.clueNumber === squareClues.across) {
+    if (focusState.direction === ClueDirection.ACROSS && focusState.clueNumber === puzzleSquareWithClues.acrossClueNumber) {
       return {
-        ...puzzleSquare,
+        ...puzzleSquareWithClues,
         highlightType: HighlightType.CLUE_HIGHLIGHTED,
       }
     }
-    if (focusState.direction === ClueDirection.DOWN && focusState.clueNumber === squareClues.down) {
+    if (focusState.direction === ClueDirection.DOWN && focusState.clueNumber === puzzleSquareWithClues.downClueNumber) {
       return {
-        ...puzzleSquare,
+        ...puzzleSquareWithClues,
         highlightType: HighlightType.CLUE_HIGHLIGHTED,
       }
     }
     return {
-      ...puzzleSquare,
+      ...puzzleSquareWithClues,
       highlightType: HighlightType.UNHIGHLIGHTED,
     }
   }));
@@ -57,10 +50,10 @@ export function getHighlightablePuzzleSquares(
 /**
  * Convert the given puzzle squares into their representation mapping each square to the clues it is part of.
  */
-export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): SquareClues[][] {
-  const squareClues: SquareClues[][] = [];
+export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): PuzzleSquareWithClues[][] {
+  const puzzleSquareWithCluesArray: PuzzleSquareWithClues[][] = [];
   for (var rowIdx = 0; rowIdx < puzzleSquares.length; rowIdx++) {
-    const rowSquareClues: SquareClues[] = [];
+    const rowSquareClues: PuzzleSquareWithClues[] = [];
     for (var colIdx = 0; colIdx < puzzleSquares[rowIdx].length; colIdx++) {
       const current = puzzleSquares[rowIdx][colIdx];
       if (current === SquareType.BLOCK) {
@@ -70,37 +63,37 @@ export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): SquareClue
 
       // Parse across and down clue values, first by the value of the previous squares, and then
       // using the number defined in the current square's cell.
-      var across: number | undefined, down: number | undefined;
+      var acrossClueNumber: number | undefined, downClueNumber: number | undefined;
       if (colIdx > 0) {
         const squareLeftOfCurrent = rowSquareClues[colIdx - 1];
         if (squareLeftOfCurrent != SquareType.BLOCK) {
-          across = squareLeftOfCurrent.across;
+          acrossClueNumber = squareLeftOfCurrent.acrossClueNumber;
         }
         else {
-          across = current.number;
+          acrossClueNumber = current.number;
         }
       }
       else {
-        across = current.number;
+        acrossClueNumber = current.number;
       }
       if (rowIdx > 0) {
-        const squareAboveCurrent = squareClues[rowIdx - 1][colIdx];
+        const squareAboveCurrent = puzzleSquareWithCluesArray[rowIdx - 1][colIdx];
         if (squareAboveCurrent != SquareType.BLOCK) {
-          down = squareAboveCurrent.down;
+          downClueNumber = squareAboveCurrent.downClueNumber;
         }
         else {
-          down = current.number;
+          downClueNumber = current.number;
         }
       }
       else {
-        down = current.number;
+        downClueNumber = current.number;
       }
 
-      rowSquareClues.push({ across, down });
+      rowSquareClues.push({ ...current, acrossClueNumber, downClueNumber });
     }
-    squareClues.push(rowSquareClues);
+    puzzleSquareWithCluesArray.push(rowSquareClues);
   }
 
-  return squareClues;
+  return puzzleSquareWithCluesArray;
 }
 
