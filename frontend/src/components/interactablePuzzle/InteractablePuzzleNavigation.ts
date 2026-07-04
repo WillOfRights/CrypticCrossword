@@ -4,8 +4,8 @@ const { useState } = React;
 import { ClueDirection, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
 import { invertDirection, } from "../crosswordGrid/CrosswordGridUtils";
 
-import { InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
-import { whenFocused, isValidProposedFocusedStateFromArray, } from "./InteractablePuzzleNavigationUtils";
+import { InteractablePuzzleFocus, InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
+import { deriveInteractablePuzzleFocus, whenFocused, isValidProposedFocusedStateFromArray, } from "./InteractablePuzzleNavigationUtils";
 
 type InteractablePuzzleNavigationActions = {
   /**
@@ -26,7 +26,7 @@ const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACR
  * Hook for navigation of the `InteractablePuzzle` component.
  */
 function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquareWithClues[][])
-  : { focusState: InteractablePuzzleFocusState, actions: InteractablePuzzleNavigationActions } {
+  : { focus: InteractablePuzzleFocus, actions: InteractablePuzzleNavigationActions } {
   const [focusState, setFocusState] = useState<InteractablePuzzleFocusState>(DEFAULT_FOCUS_STATE);
 
   // Reused helpers that requre scoped variables
@@ -66,9 +66,10 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
     }
 
   return {
-    focusState,
+    focus: deriveInteractablePuzzleFocus(puzzleSquareWithCluesArray, focusState),
     actions: {
       toggleDirection: asCallback(toggleDirection),
+      navigateToCell: asCallback(navigateToCell),
     },
   };
 }

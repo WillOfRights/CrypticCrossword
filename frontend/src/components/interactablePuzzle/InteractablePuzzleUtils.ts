@@ -1,13 +1,13 @@
 import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight } from "../crosswordGrid/CrosswordGridTypes";
-import { InteractablePuzzleFocusState, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
+import { InteractablePuzzleFocus, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
 
 /**
  * Get the highlightable puzzle squares as a 2d array based on the focus state of the interactable puzzle.
  */
 export function getHighlightablePuzzleSquares(
   puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
-  focusState: InteractablePuzzleFocusState): PuzzleSquareWithHighlight[][] {
-  if (focusState === InteractablePuzzleUnfocused.NOT_FOCUSED) {
+  focus: InteractablePuzzleFocus): PuzzleSquareWithHighlight[][] {
+  if (focus === InteractablePuzzleUnfocused.NOT_FOCUSED) {
     return puzzleSquareWithCluesArray.map((rowPuzzleSquareWithClues) => rowPuzzleSquareWithClues.map((puzzleSquareWithClues) => {
       if (puzzleSquareWithClues === SquareType.BLOCK) {
         return SquareType.BLOCK;
@@ -34,19 +34,19 @@ export function getHighlightablePuzzleSquares(
       fill: puzzleSquareWithClues.fill,
       number: puzzleSquareWithClues.number,
     };
-    if (rowIdx === focusState.rowIdx && colIdx === focusState.colIdx) {
+    if (rowIdx === focus.rowIdx && colIdx === focus.colIdx) {
       return {
         ...puzzleSquare,
         highlightType: HighlightType.FOCUSED_SQUARE,
       }
     }
-    if (focusState.direction === ClueDirection.ACROSS && focusState.clueNumber === puzzleSquareWithClues.acrossClueNumber) {
+    if (focus.direction === ClueDirection.ACROSS && focus.clueNumber === puzzleSquareWithClues.acrossClueNumber) {
       return {
         ...puzzleSquare,
         highlightType: HighlightType.CLUE_HIGHLIGHTED,
       }
     }
-    if (focusState.direction === ClueDirection.DOWN && focusState.clueNumber === puzzleSquareWithClues.downClueNumber) {
+    if (focus.direction === ClueDirection.DOWN && focus.clueNumber === puzzleSquareWithClues.downClueNumber) {
       return {
         ...puzzleSquare,
         highlightType: HighlightType.CLUE_HIGHLIGHTED,
