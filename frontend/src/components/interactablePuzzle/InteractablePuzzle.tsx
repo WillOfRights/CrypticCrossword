@@ -17,14 +17,14 @@ function InteractablePuzzle() {
     const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares);
 
-    const { focus } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
+    const { focus, actions } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
 
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
 
     return (
         <div className={'interactable-puzzle'}>
             <div className={'grid-container'}>
-                <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} />
+                <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} actions={actions} />
             </div>
             <div className={'clue-panel-container'}>
                 <CluePanel acrossCluePanelClues={acrossCluePanelClues} downCluePanelClues={downCluePanelClues} />

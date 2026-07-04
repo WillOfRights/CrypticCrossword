@@ -5,19 +5,26 @@ import { PuzzleSquareWithHighlight, SquareType, } from './CrosswordGridTypes';
 import GridSquare from './GridSquare';
 import GridBorder from './GridBorder';
 import GridLines from './GridLines';
+import { InteractablePuzzleNavigationActions } from '../interactablePuzzle/InteractablePuzzleNavigation';
 
 interface CrosswordGridProps {
     /**
      * 2D Array of all the puzzle squares, first stored by column and then row.
      */
     puzzleSquares: PuzzleSquareWithHighlight[][],
+
+    /**
+     * Actions relating to navigating the puzzle, used to setup events on the crossword grid.
+     * Unset if this is not part of an interactive puzzle.
+     */
+    actions?: InteractablePuzzleNavigationActions,
 }
 
 /**
  * A stylized crossword grid, for use as part of an interactive puzzle or decoratively.
  */
-function CrosswordGrid({ puzzleSquares }: CrosswordGridProps) {
-    if (!validateProps({ puzzleSquares })) {
+function CrosswordGrid({ puzzleSquares, actions }: CrosswordGridProps) {
+    if (!validateProps({ puzzleSquares, actions })) {
         return '';
     }
 
@@ -27,7 +34,7 @@ function CrosswordGrid({ puzzleSquares }: CrosswordGridProps) {
     const realHeight = squaresHeight * GRID_SQUARE_SIZE + 2 * GRID_BORDER_OUTLINE_SIZE;
 
     return <svg width={realWidth} height={realHeight}>
-        {createGridSquares(puzzleSquares)}
+        {createGridSquares(puzzleSquares, actions)}
         <GridLines squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
         <GridBorder squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
     </svg>;
@@ -48,7 +55,7 @@ function validateProps({ puzzleSquares }: CrosswordGridProps) {
 /**
  * Create the list of grid square objects for the given highlightable puzzle squares.
  */
-function createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][]) {
+function createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][], actions?: InteractablePuzzleNavigationActions) {
     const gridSquares: React.ReactElement[] = [];
     const rowLength = puzzleSquares[0].length;
 
@@ -64,6 +71,7 @@ function createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][]) {
                     offsetDim={{ x: colIdx, y: rowIdx }}
                     key={`${rowIdx}-${colIdx}`}
                     highlightType={isBlock ? undefined : puzzleSquare.highlightType}
+                    actions={actions}
                 />
             );
         }

@@ -33,7 +33,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
 
   const asCallback = (action: (...args: any[]) => React.SetStateAction<InteractablePuzzleFocusState>) =>
     (...args: any[]) => {
-      setFocusState(action(args));
+      setFocusState(action(...args));
     };
   const withProposedFocusedState =
     (f: InteractablePuzzleFocusedState, fallbackState: InteractablePuzzleFocusState) => {
@@ -76,4 +76,5 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
 
 export {
   useInteractablePuzzleNavigation,
+  InteractablePuzzleNavigationActions,
 }
