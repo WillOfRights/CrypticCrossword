@@ -8,6 +8,13 @@ type InteractablePuzzleFocusedState = {
   colIdx: number,
   rowIdx: number,
   direction: ClueDirection,
+}
+
+/**
+ * Similar to `InteractablePuzzleFocusedState`, but including values that can be derived from the state
+ * (such as the clue number we are focused on).
+ */
+type InteractablePuzzleFocusedFull = InteractablePuzzleFocusedState & {
   clueNumber: number,
 }
 
@@ -17,5 +24,6 @@ export {
   InteractablePuzzleUnfocused,
   InteractablePuzzleFocusedState,
   InteractablePuzzleFocusState,
+  InteractablePuzzleFocusedFull,
 }
 

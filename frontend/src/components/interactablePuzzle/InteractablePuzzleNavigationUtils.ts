@@ -1,5 +1,5 @@
 import { ClueDirection, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
-import { InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
+import { InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 
 /**
  * Helper to determine if the given puzzle square is focusable and in the proposed direction.
@@ -17,6 +17,12 @@ function isValidDirectionForPuzzleSquareWithClues(
 }
 
 /**
+ * Helper to derive the full focused state from the minimal basis focused state and the puzzle with clues array.
+ */
+function deriveFullFocusedState(focusedState: InteractablePuzzleFocusedState) {
+}
+
+/**
  * Helper to only apply an update function if the `InteractablePuzzle` is focused.
  */
 export function whenFocused(updateFn: (f: InteractablePuzzleFocusedState) => InteractablePuzzleFocusState) {
@@ -30,7 +36,7 @@ export function whenFocused(updateFn: (f: InteractablePuzzleFocusedState) => Int
 };
 
 /**
- * Given a proposed state f, return if the state is valid for the given puzzle clues array.
+ * Given a proposed state f, return if the state is valid for the given puzzle with clues array.
  */
 export function isValidProposedFocusedStateFromArray(
   puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],

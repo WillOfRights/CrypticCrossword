@@ -1,8 +1,10 @@
 import * as React from 'react';
 const { useState } = React;
 
-import { ClueDirection, PuzzleSquareWithClues, } from "../crosswordGrid/CrosswordGridTypes";
-import { InteractablePuzzleFocusedState, InteractablePuzzleFocusState, } from "./InteractablePuzzleTypes";
+import { ClueDirection, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
+import { invertDirection, } from "../crosswordGrid/CrosswordGridUtils";
+
+import { InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 import { whenFocused, isValidProposedFocusedStateFromArray, } from "./InteractablePuzzleNavigationUtils";
 
 type InteractablePuzzleNavigationActions = {
@@ -12,12 +14,13 @@ type InteractablePuzzleNavigationActions = {
   toggleDirection: () => void,
 
   /**
-   * Navigate to a specific cell (if allowed).
+   * Navigate to a specific cell (if allowed). Optionally accepts a preferred direction, otherwise
+   * prefers the current direction (if any exist) and otherwise the across direction.
    */
-  navigateToCellIdxes: () => void,
+  navigateToCell: (rowIdx: number, colIdx: number, preferredDirection?: ClueDirection) => void,
 };
 
-const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACROSS, clueNumber: 1 };
+const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACROSS, };
 
 /**
  * Hook for navigation of the `InteractablePuzzle` component.
@@ -36,20 +39,31 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
     (f: InteractablePuzzleFocusedState, fallbackState: InteractablePuzzleFocusState) => {
       return isValidProposedFocusedStateFromArray(puzzleSquareWithCluesArray, f) ? f : fallbackState;
     };
+  const withSoftRetryDirection =
+    (f: InteractablePuzzleFocusedState, fallbackState: InteractablePuzzleFocusState) => {
+      return withProposedFocusedState(f,
+        withProposedFocusedState(
+          { ...f, direction: invertDirection(f.direction) },
+          fallbackState
+        )
+      );
+    };
 
   // Navigation actions
 
   const toggleDirection = () => whenFocused((f: InteractablePuzzleFocusedState) => {
-    const proposedDirection = f.direction === ClueDirection.ACROSS
-      ? ClueDirection.DOWN
-      : ClueDirection.ACROSS;
-
-    return withProposedFocusedState({ ...f, direction: proposedDirection }, f);
+    return withProposedFocusedState({ ...f, direction: invertDirection(f.direction) }, f);
   });
 
-  const navigateToCellIdxes = () => (f: InteractablePuzzleFocusState) => {
-
-  }
+  const navigateToCell = (rowIdx: number, colIdx: number, preferredDirection?: ClueDirection) =>
+    (f: InteractablePuzzleFocusState) => {
+      const proposedDirection = !!preferredDirection
+        ? preferredDirection
+        : f !== InteractablePuzzleUnfocused.NOT_FOCUSED
+          ? f.direction
+          : ClueDirection.ACROSS;
+      return withSoftRetryDirection({ rowIdx, colIdx, direction: proposedDirection }, f);
+    }
 
   return {
     focusState,
