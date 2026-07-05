@@ -13,10 +13,10 @@ function getClueNumberForSquareAndDirection(
     return undefined;
   }
 
-  if ((clueDirection === ClueDirection.ACROSS && !!puzzleSquareWithClues.acrossClueNumber)) {
+  if ((clueDirection === ClueDirection.ACROSS && puzzleSquareWithClues.acrossClueNumber !== undefined)) {
     return puzzleSquareWithClues.acrossClueNumber;
   }
-  if ((clueDirection === ClueDirection.DOWN && !!puzzleSquareWithClues.downClueNumber)) {
+  if ((clueDirection === ClueDirection.DOWN && puzzleSquareWithClues.downClueNumber !== undefined)) {
     return puzzleSquareWithClues.downClueNumber;
   }
   return undefined;
@@ -33,8 +33,8 @@ function isValidDirectionForPuzzleSquareWithClues(
     return false;
   }
 
-  return (clueDirection === ClueDirection.ACROSS && !!puzzleSquareWithClues.acrossClueNumber)
-    || (clueDirection === ClueDirection.DOWN && !!puzzleSquareWithClues.downClueNumber);
+  return (clueDirection === ClueDirection.ACROSS && puzzleSquareWithClues.acrossClueNumber !== undefined)
+    || (clueDirection === ClueDirection.DOWN && puzzleSquareWithClues.downClueNumber !== undefined);
 }
 
 /**

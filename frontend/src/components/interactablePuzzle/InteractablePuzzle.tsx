@@ -8,7 +8,7 @@ import { CluePanelClue } from "../cluePanel/CluePanelTypes";
 
 import { getHighlightablePuzzleSquares, getSquareCluesArray } from "./InteractablePuzzleUtils";
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
-
+import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
 
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
@@ -18,11 +18,12 @@ function InteractablePuzzle() {
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares);
 
     const { focus, actions } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
+    const { onKeyDown, } = useInteractablePuzzleKeyboard(actions);
 
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
 
     return (
-        <div className={'interactable-puzzle'}>
+        <div className={'interactable-puzzle'} tabIndex={0} onKeyDown={onKeyDown} >
             <div className={'grid-container'}>
                 <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} actions={actions} />
             </div>

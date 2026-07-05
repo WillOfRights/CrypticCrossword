@@ -18,7 +18,36 @@ type InteractablePuzzleNavigationActions = {
    * prefers the current direction (if any exist) and otherwise the across direction.
    */
   navigateToCell: (rowIdx: number, colIdx: number, preferredDirection?: ClueDirection) => void,
+
+  /**
+   * Move to the next cell in the given direction that is a letter square.
+   */
+  moveInDirection: (
+    navigationDirection: NavigationDirection,
+  ) => void,
+
+  /**
+   * Move to the next cell in the given direction that is a letter square, but toggle direction
+   * first if the direction navigating does not match the current highlighted direction.
+   */
+  moveOrToggleInDirection: (
+    navigationDirection: NavigationDirection,
+  ) => void,
 };
+
+enum NavigationDirection {
+  RIGHT,
+  LEFT,
+  DOWN,
+  UP,
+};
+
+const NAVIGATION_DIRECTION_TO_CLUE_DIRECTION = {
+  [NavigationDirection.RIGHT]: ClueDirection.ACROSS,
+  [NavigationDirection.DOWN]: ClueDirection.DOWN,
+  [NavigationDirection.LEFT]: ClueDirection.ACROSS,
+  [NavigationDirection.UP]: ClueDirection.DOWN,
+}
 
 const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACROSS, };
 
@@ -48,6 +77,42 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
         )
       );
     };
+  const moveUpdateFn = (
+    navigationDirection: NavigationDirection,
+  ) => (f: InteractablePuzzleFocusedState) => {
+    let rowIdx = f.rowIdx;
+    let colIdx = f.colIdx;
+    const increment = () => {
+      switch (navigationDirection) {
+        case NavigationDirection.RIGHT:
+          colIdx++;
+          break;
+        case NavigationDirection.DOWN:
+          rowIdx++;
+          break;
+        case NavigationDirection.LEFT:
+          colIdx--;
+          break;
+        case NavigationDirection.UP:
+          rowIdx--;
+          break;
+      }
+    };
+
+    increment();
+
+    while (0 <= rowIdx && 0 <= colIdx
+      && rowIdx < puzzleSquareWithCluesArray.length && colIdx < puzzleSquareWithCluesArray[rowIdx].length) {
+      const puzzleSquare = puzzleSquareWithCluesArray[rowIdx][colIdx];
+      if (puzzleSquare !== SquareType.BLOCK) {
+        return withSoftRetryDirection({ rowIdx, colIdx, direction: f.direction }, f);
+      }
+
+      increment();
+    }
+
+    return f;
+  };
 
   // Navigation actions
 
@@ -57,7 +122,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
 
   const navigateToCell = (rowIdx: number, colIdx: number, preferredDirection?: ClueDirection) =>
     (f: InteractablePuzzleFocusState) => {
-      const proposedDirection = !!preferredDirection
+      const proposedDirection = preferredDirection !== undefined
         ? preferredDirection
         : f !== InteractablePuzzleUnfocused.NOT_FOCUSED
           ? f.direction
@@ -65,11 +130,30 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
       return withSoftRetryDirection({ rowIdx, colIdx, direction: proposedDirection }, f);
     }
 
+  const moveInDirection = (
+    navigationDirection: NavigationDirection,
+  ) =>
+    whenFocused(moveUpdateFn(navigationDirection));
+
+  const moveOrToggleInDirection = (
+    navigationDirection: NavigationDirection,
+  ) =>
+    whenFocused((f: InteractablePuzzleFocusedState) => {
+      const proposedMoveState = moveUpdateFn(navigationDirection)(f);
+      if (f.direction !== NAVIGATION_DIRECTION_TO_CLUE_DIRECTION[navigationDirection]) {
+        // Toggle the direction if it is possible, but otherwise move in the given direction
+        return withProposedFocusedState({ ...f, direction: invertDirection(f.direction) }, proposedMoveState);
+      }
+      return proposedMoveState;
+    });
+
   return {
     focus: deriveInteractablePuzzleFocus(puzzleSquareWithCluesArray, focusState),
     actions: {
       toggleDirection: asCallback(toggleDirection),
       navigateToCell: asCallback(navigateToCell),
+      moveInDirection: asCallback(moveInDirection),
+      moveOrToggleInDirection: asCallback(moveOrToggleInDirection),
     },
   };
 }
@@ -77,4 +161,5 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
 export {
   useInteractablePuzzleNavigation,
   InteractablePuzzleNavigationActions,
+  NavigationDirection,
 }
