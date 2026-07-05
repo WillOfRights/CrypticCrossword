@@ -6,8 +6,6 @@ import {
     GRID_SQUARE_SIZE,
 } from './CrosswordGridConstants';
 import { HighlightType } from './CrosswordGridTypes';
-import classNames from 'classnames';
-import { InteractablePuzzleNavigationActions } from '../interactablePuzzle/InteractablePuzzleNavigation';
 
 interface GridSquareProps {
     /**
@@ -34,14 +32,14 @@ interface GridSquareProps {
      * nothing.
      */
     highlightType?: HighlightType,
-    actions?: InteractablePuzzleNavigationActions,
+    onClick?: (e: React.MouseEvent<SVGElement>) => void,
 }
 
 /**
  * A single crossword style grid square, for use in a puzzle or stylistically on the site. This is a group rendered
  * inside a svg by CrosswordGrid.jsx.
  */
-function GridSquare({ isBlock, fill, number, offsetDim, highlightType, actions }: GridSquareProps) {
+function GridSquare({ isBlock, fill, number, offsetDim, highlightType, onClick }: GridSquareProps) {
     const translateX = offsetDim.x * GRID_SQUARE_SIZE + GRID_BORDER_OUTLINE_SIZE;
     const translateY = offsetDim.y * GRID_SQUARE_SIZE + GRID_BORDER_OUTLINE_SIZE;
 
@@ -58,18 +56,6 @@ function GridSquare({ isBlock, fill, number, offsetDim, highlightType, actions }
     else {
         fillClassName = 'fillable';
     }
-
-    const onClick = () => {
-        if (!actions) {
-            return;
-        }
-        if (highlightType === HighlightType.FOCUSED_SQUARE) {
-            actions.toggleDirection();
-        }
-        else {
-            actions.navigateToCell(offsetDim.y, offsetDim.x);
-        }
-    };
 
     return <g className={'grid-square'} transform={`translate(${translateX} ${translateY})`} onClick={onClick} >
         <rect width={GRID_SQUARE_SIZE} height={GRID_SQUARE_SIZE} className={fillClassName}></rect>

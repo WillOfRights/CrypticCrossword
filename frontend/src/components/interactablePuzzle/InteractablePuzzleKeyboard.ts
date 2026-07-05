@@ -1,4 +1,3 @@
-import { ClueDirection, PuzzleSquareWithClues, } from "../crosswordGrid/CrosswordGridTypes";
 import { InteractablePuzzleNavigationActions, NavigationDirection, } from "./InteractablePuzzleNavigation";
 
 type PuzzleKeyboardActions = {
@@ -15,8 +14,7 @@ const KEY_TO_NAVIGATION_DIRECTION = {
 /**
  * Hook to get keyboard controls for an interactable puzzle.
  */
-function useInteractablePuzzleKeyboard(
-  actions: InteractablePuzzleNavigationActions):
+function useInteractablePuzzleKeyboard(actions: InteractablePuzzleNavigationActions):
   PuzzleKeyboardActions {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {

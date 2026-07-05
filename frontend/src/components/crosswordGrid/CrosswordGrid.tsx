@@ -1,11 +1,12 @@
 import * as React from 'react';
 
+import { PuzzleMouseActions } from '../interactablePuzzle/InteractablePuzzleMouse';
+
 import { GRID_BORDER_OUTLINE_SIZE, GRID_SQUARE_SIZE, } from './CrosswordGridConstants';
 import { PuzzleSquareWithHighlight, SquareType, } from './CrosswordGridTypes';
 import GridSquare from './GridSquare';
 import GridBorder from './GridBorder';
 import GridLines from './GridLines';
-import { InteractablePuzzleNavigationActions } from '../interactablePuzzle/InteractablePuzzleNavigation';
 
 interface CrosswordGridProps {
     /**
@@ -14,17 +15,16 @@ interface CrosswordGridProps {
     puzzleSquares: PuzzleSquareWithHighlight[][],
 
     /**
-     * Actions relating to navigating the puzzle, used to setup events on the crossword grid.
-     * Unset if this is not part of an interactive puzzle.
+     * Mouse control actions relating to using the crossword grid. Undefined if this is not interactive.
      */
-    actions?: InteractablePuzzleNavigationActions,
+    mouseActions?: PuzzleMouseActions,
 }
 
 /**
  * A stylized crossword grid, for use as part of an interactive puzzle or decoratively.
  */
-function CrosswordGrid({ puzzleSquares, actions }: CrosswordGridProps) {
-    if (!validateProps({ puzzleSquares, actions })) {
+function CrosswordGrid({ puzzleSquares, mouseActions }: CrosswordGridProps) {
+    if (!validateProps({ puzzleSquares, mouseActions })) {
         return '';
     }
 
@@ -34,7 +34,7 @@ function CrosswordGrid({ puzzleSquares, actions }: CrosswordGridProps) {
     const realHeight = squaresHeight * GRID_SQUARE_SIZE + 2 * GRID_BORDER_OUTLINE_SIZE;
 
     return <svg width={realWidth} height={realHeight}>
-        {createGridSquares(puzzleSquares, actions)}
+        {createGridSquares(puzzleSquares, mouseActions)}
         <GridLines squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
         <GridBorder squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
     </svg>;
@@ -55,7 +55,7 @@ function validateProps({ puzzleSquares }: CrosswordGridProps) {
 /**
  * Create the list of grid square objects for the given highlightable puzzle squares.
  */
-function createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][], actions?: InteractablePuzzleNavigationActions) {
+function createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][], mouseActions?: PuzzleMouseActions) {
     const gridSquares: React.ReactElement[] = [];
     const rowLength = puzzleSquares[0].length;
 
@@ -71,7 +71,7 @@ function createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][], actions
                     offsetDim={{ x: colIdx, y: rowIdx }}
                     key={`${rowIdx}-${colIdx}`}
                     highlightType={isBlock ? undefined : puzzleSquare.highlightType}
-                    actions={actions}
+                    onClick={mouseActions?.onSquareClickForSquare(rowIdx, colIdx)}
                 />
             );
         }

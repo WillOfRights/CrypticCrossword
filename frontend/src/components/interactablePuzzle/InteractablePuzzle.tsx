@@ -1,6 +1,8 @@
 import './InteractablePuzzle.scss';
 import * as React from 'react';
 
+const { useRef, useEffect } = React;
+
 import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
 import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
@@ -9,23 +11,32 @@ import { CluePanelClue } from "../cluePanel/CluePanelTypes";
 import { getHighlightablePuzzleSquares, getSquareCluesArray } from "./InteractablePuzzleUtils";
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
+import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
 
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
  */
 function InteractablePuzzle() {
+    const ref = useRef<HTMLDivElement>(null);
+
     const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares);
 
     const { focus, actions } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
     const { onKeyDown, } = useInteractablePuzzleKeyboard(actions);
+    const mouseActions = useInteractablePuzzleMouse(actions, focus);
+
+    // Autofocus interactable puzzle on page load
+    useEffect(() => {
+        ref.current?.focus();
+    });
 
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
 
     return (
-        <div className={'interactable-puzzle'} tabIndex={0} onKeyDown={onKeyDown} >
+        <div className={'interactable-puzzle'} ref={ref} tabIndex={0} onKeyDown={onKeyDown} >
             <div className={'grid-container'}>
-                <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} actions={actions} />
+                <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} mouseActions={mouseActions} />
             </div>
             <div className={'clue-panel-container'}>
                 <CluePanel acrossCluePanelClues={acrossCluePanelClues} downCluePanelClues={downCluePanelClues} />
