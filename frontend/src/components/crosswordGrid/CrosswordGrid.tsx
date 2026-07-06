@@ -33,7 +33,7 @@ function CrosswordGrid({ puzzleSquares, mouseActions }: CrosswordGridProps) {
     const realWidth = squaresWidth * GRID_SQUARE_SIZE + 2 * GRID_BORDER_OUTLINE_SIZE;
     const realHeight = squaresHeight * GRID_SQUARE_SIZE + 2 * GRID_BORDER_OUTLINE_SIZE;
 
-    return <svg width={realWidth} height={realHeight}>
+    return <svg width={realWidth} height={realHeight} className={'crossword-grid'}>
         {createGridSquares(puzzleSquares, mouseActions)}
         <GridLines squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
         <GridBorder squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
