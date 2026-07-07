@@ -9,6 +9,16 @@ import { deriveInteractablePuzzleFocus, whenFocused, isValidProposedFocusedState
 
 type InteractablePuzzleNavigationActions = {
   /**
+   * Unfocus the interactable puzzle.
+   */
+  unfocus: () => void,
+
+  /**
+   * Focus the first square in the puzzle.
+   */
+  focusFirstSquare: () => void,
+
+  /**
    * Toggle the direction of the focus.
    */
   toggleDirection: () => void,
@@ -113,8 +123,24 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
 
     return f;
   };
+  const findFirstHighlightableSquare = () => {
+    for (let rowIdx = 0; rowIdx < puzzleSquareWithCluesArray.length; rowIdx++) {
+      for (let colIdx = 0; colIdx < puzzleSquareWithCluesArray[rowIdx].length; colIdx++) {
+        if (puzzleSquareWithCluesArray[rowIdx][colIdx] !== SquareType.BLOCK) {
+          return { rowIdx, colIdx };
+        }
+      }
+    }
+    throw new Error("No non-block squares found, cannot select first square.");
+  };
 
   // Navigation actions
+  const unfocus = () => InteractablePuzzleUnfocused.NOT_FOCUSED;
+
+  const focusFirstSquare = () => (f: InteractablePuzzleFocusState) => {
+    const { rowIdx, colIdx } = findFirstHighlightableSquare();
+    return withSoftRetryDirection({ rowIdx, colIdx, direction: ClueDirection.ACROSS }, InteractablePuzzleUnfocused.NOT_FOCUSED);
+  }
 
   const toggleDirection = () => whenFocused((f: InteractablePuzzleFocusedState) => {
     return withProposedFocusedState({ ...f, direction: invertDirection(f.direction) }, f);
@@ -150,6 +176,8 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
   return {
     focus: deriveInteractablePuzzleFocus(puzzleSquareWithCluesArray, focusState),
     actions: {
+      unfocus: asCallback(unfocus),
+      focusFirstSquare: asCallback(focusFirstSquare),
       toggleDirection: asCallback(toggleDirection),
       navigateToCell: asCallback(navigateToCell),
       moveInDirection: asCallback(moveInDirection),

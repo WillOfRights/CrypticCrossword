@@ -1,7 +1,10 @@
 import { InteractablePuzzleNavigationActions, NavigationDirection, } from "./InteractablePuzzleNavigation";
+import { InteractablePuzzleFocus, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
 
 type PuzzleKeyboardActions = {
   onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
+  onFocusInteractivePuzzle: (e: React.FocusEvent<HTMLElement>) => void;
+  onBlurInteractivePuzzle: (e: React.FocusEvent<HTMLElement>) => void;
 };
 
 const KEY_TO_NAVIGATION_DIRECTION = {
@@ -14,7 +17,7 @@ const KEY_TO_NAVIGATION_DIRECTION = {
 /**
  * Hook to get keyboard controls for an interactable puzzle.
  */
-function useInteractablePuzzleKeyboard(actions: InteractablePuzzleNavigationActions):
+function useInteractablePuzzleKeyboard(actions: InteractablePuzzleNavigationActions, focus: InteractablePuzzleFocus):
   PuzzleKeyboardActions {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -25,7 +28,20 @@ function useInteractablePuzzleKeyboard(actions: InteractablePuzzleNavigationActi
     }
   };
 
-  return { onKeyDown };
+  const onFocusInteractivePuzzle = (e: React.FocusEvent<HTMLElement>) => {
+    if (focus === InteractablePuzzleUnfocused.NOT_FOCUSED) {
+      actions.focusFirstSquare();
+    }
+  };
+
+  const onBlurInteractivePuzzle = (e: React.FocusEvent<HTMLElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+      // Focus left the interactive puzzle
+      actions.unfocus();
+    }
+  };
+
+  return { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, };
 }
 
 export {

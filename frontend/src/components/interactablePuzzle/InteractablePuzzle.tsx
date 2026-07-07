@@ -23,18 +23,23 @@ function InteractablePuzzle() {
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares);
 
     const { focus, actions } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
-    const { onKeyDown, } = useInteractablePuzzleKeyboard(actions);
+    const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle } = useInteractablePuzzleKeyboard(actions, focus);
     const mouseActions = useInteractablePuzzleMouse(actions, focus);
 
     // Autofocus interactable puzzle on page load
     useEffect(() => {
         ref.current?.focus();
-    });
+    }, []);
 
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
 
     return (
-        <div className={'interactable-puzzle'} ref={ref} tabIndex={0} onKeyDown={onKeyDown} >
+        <div className={'interactable-puzzle'}
+            ref={ref}
+            tabIndex={0}
+            onKeyDown={onKeyDown}
+            onFocus={onFocusInteractivePuzzle}
+            onBlur={onBlurInteractivePuzzle} >
             <div className={'grid-container'}>
                 <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} mouseActions={mouseActions} />
             </div>

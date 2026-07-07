@@ -1,4 +1,3 @@
-import { HighlightType } from "../crosswordGrid/CrosswordGridTypes";
 import { InteractablePuzzleNavigationActions, } from "./InteractablePuzzleNavigation";
 import { InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 
