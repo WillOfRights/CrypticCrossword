@@ -1,3 +1,4 @@
+import { CluePanelClue, StatefulCluePanelClue } from "../cluePanel/CluePanelTypes";
 import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight } from "../crosswordGrid/CrosswordGridTypes";
 import { InteractablePuzzleFocus, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
 
@@ -108,5 +109,34 @@ export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): PuzzleSqua
   }
 
   return puzzleSquareWithCluesArray;
+}
+
+/**
+ * Get the clue panel clues with stateful information about their status in the puzzle.
+ */
+export function getStatefulCluePanelClues(
+  acrossCluePanelClues: CluePanelClue[],
+  downCluePanelClues: CluePanelClue[],
+  interactablePuzzleFocus: InteractablePuzzleFocus,
+): { acrossStatefulClues: StatefulCluePanelClue[], downStatefulClues: StatefulCluePanelClue[] } {
+  const clueMatchesFocus = (clueNumber: number, direction: ClueDirection) => {
+    if (interactablePuzzleFocus === InteractablePuzzleUnfocused.NOT_FOCUSED) {
+      return false;
+    }
+    return clueNumber === interactablePuzzleFocus.clueNumber && direction === interactablePuzzleFocus.direction;
+  }
+
+  const acrossStatefulClues = acrossCluePanelClues.map(clue => ({
+    ...clue,
+    isAnswered: false,
+    isHighlighted: clueMatchesFocus(clue.number, ClueDirection.ACROSS),
+  }));
+  const downStatefulClues = downCluePanelClues.map(clue => ({
+    ...clue,
+    isAnswered: false,
+    isHighlighted: clueMatchesFocus(clue.number, ClueDirection.DOWN),
+  }));
+
+  return { acrossStatefulClues, downStatefulClues, };
 }
 

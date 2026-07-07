@@ -1,11 +1,11 @@
 import './CluePanel.scss';
 import * as React from 'react';
 
-import { CluePanelClue, } from "./CluePanelTypes";
+import { StatefulCluePanelClue, } from "./CluePanelTypes";
 
 interface CluePanelProps {
-    acrossCluePanelClues: CluePanelClue[],
-    downCluePanelClues: CluePanelClue[],
+    acrossCluePanelClues: StatefulCluePanelClue[],
+    downCluePanelClues: StatefulCluePanelClue[],
 }
 
 /**
@@ -33,9 +33,12 @@ function CluePanel({ acrossCluePanelClues, downCluePanelClues }: CluePanelProps)
 /**
  * Render a clue as a list item.
  */
-function _renderClue(cluePanelClue: CluePanelClue) {
+function _renderClue(cluePanelClue: StatefulCluePanelClue) {
+    const { isHighlighted, } = cluePanelClue;
+    const className = isHighlighted ? 'highlighted' : '';
+
     return (
-        <li key={cluePanelClue.number} value={cluePanelClue.number}>
+        <li key={cluePanelClue.number} value={cluePanelClue.number} className={className}>
             {cluePanelClue.number}. {cluePanelClue.clueText}
         </li>
     );

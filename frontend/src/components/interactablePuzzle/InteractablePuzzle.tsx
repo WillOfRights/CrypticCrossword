@@ -8,7 +8,7 @@ import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue } from "../cluePanel/CluePanelTypes";
 
-import { getHighlightablePuzzleSquares, getSquareCluesArray } from "./InteractablePuzzleUtils";
+import { getHighlightablePuzzleSquares, getSquareCluesArray, getStatefulCluePanelClues } from "./InteractablePuzzleUtils";
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
 import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
@@ -32,6 +32,7 @@ function InteractablePuzzle() {
     }, []);
 
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
+    const { acrossStatefulClues, downStatefulClues, } = getStatefulCluePanelClues(acrossCluePanelClues, downCluePanelClues, focus);
 
     return (
         <div className={'interactable-puzzle'}
@@ -44,7 +45,7 @@ function InteractablePuzzle() {
                 <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} mouseActions={mouseActions} />
             </div>
             <div className={'clue-panel-container'}>
-                <CluePanel acrossCluePanelClues={acrossCluePanelClues} downCluePanelClues={downCluePanelClues} />
+                <CluePanel acrossCluePanelClues={acrossStatefulClues} downCluePanelClues={downStatefulClues} />
             </div>
         </div>
     );
@@ -93,18 +94,18 @@ function fakeData() {
     ];
 
     const acrossCluePanelClues: CluePanelClue[] = [
-        { clueText: 'DOG', number: 1, isAnswered: false },
-        { clueText: 'OWE', number: 4, isAnswered: false },
-        { clueText: 'MID', number: 5, isAnswered: false },
-        { clueText: 'IS', number: 7, isAnswered: false },
-        { clueText: 'ACE', number: 8, isAnswered: false },
+        { clueText: 'DOG', number: 1, },
+        { clueText: 'OWE', number: 4, },
+        { clueText: 'MID', number: 5, },
+        { clueText: 'IS', number: 7, },
+        { clueText: 'ACE', number: 8, },
     ];
 
     const downCluePanelClues: CluePanelClue[] = [
-        { clueText: 'DIM', number: 1, isAnswered: false },
-        { clueText: 'GOD', number: 2, isAnswered: false },
-        { clueText: 'ME', number: 3, isAnswered: false },
-        { clueText: 'INC', number: 6, isAnswered: false },
+        { clueText: 'DIM', number: 1, },
+        { clueText: 'GOD', number: 2, },
+        { clueText: 'ME', number: 3, },
+        { clueText: 'INC', number: 6, },
     ];
     return {
         puzzleSquares,
