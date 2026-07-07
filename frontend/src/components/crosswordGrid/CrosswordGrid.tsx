@@ -24,7 +24,7 @@ interface CrosswordGridProps {
  * A stylized crossword grid, for use as part of an interactive puzzle or decoratively.
  */
 function CrosswordGrid({ puzzleSquares, mouseActions }: CrosswordGridProps) {
-    if (!validateProps({ puzzleSquares, mouseActions })) {
+    if (!_validateProps({ puzzleSquares, mouseActions })) {
         return '';
     }
 
@@ -34,7 +34,7 @@ function CrosswordGrid({ puzzleSquares, mouseActions }: CrosswordGridProps) {
     const realHeight = squaresHeight * GRID_SQUARE_SIZE + 2 * GRID_BORDER_OUTLINE_SIZE;
 
     return <svg width={realWidth} height={realHeight} className={'crossword-grid'}>
-        {createGridSquares(puzzleSquares, mouseActions)}
+        {_createGridSquares(puzzleSquares, mouseActions)}
         <GridLines squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
         <GridBorder squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
     </svg>;
@@ -43,7 +43,7 @@ function CrosswordGrid({ puzzleSquares, mouseActions }: CrosswordGridProps) {
 /**
  * Validate props, returns true if they are successfully validated and otherwise false.
  */
-function validateProps({ puzzleSquares }: CrosswordGridProps) {
+function _validateProps({ puzzleSquares }: CrosswordGridProps) {
     if (puzzleSquares.length === 0
         || puzzleSquares.some(puzzleSquareRow => puzzleSquareRow.length != puzzleSquares.length)) {
         // Puzzle squares have zero length or not a uniform grid
@@ -55,7 +55,7 @@ function validateProps({ puzzleSquares }: CrosswordGridProps) {
 /**
  * Create the list of grid square objects for the given highlightable puzzle squares.
  */
-function createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][], mouseActions?: PuzzleMouseActions) {
+function _createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][], mouseActions?: PuzzleMouseActions) {
     const gridSquares: React.ReactElement[] = [];
     const rowLength = puzzleSquares[0].length;
 
