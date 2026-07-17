@@ -8,17 +8,17 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CrypticClueExplanation(
     val clueText: String,
-    val explanationParts: List<CrypticClueExplanationStep>,
+    val explanationSteps: List<CrypticClueExplanationStep>,
     val answer: String)
 {
     init {
-        require(explanationParts.isNotEmpty()) { "Explanation cannot have empty explanation parts."}
-        require(explanationParts[0].text == clueText) {
-            "The first part of the explanation start with the same text as the clue text."
+        require(explanationSteps.isNotEmpty()) { "Explanation cannot have empty explanation steps."}
+        require(explanationSteps[0].text == clueText) {
+            "The first step of the explanation must have the same text as the clue text."
         }
-        for (i in 0 until explanationParts.size - 1) {
-            require( explanationParts[i].isResetStep
-                    || CrypticClueExplanationUtils.isYieldRelation(explanationParts[i], explanationParts[i + 1])) {
+        for (i in 0 until explanationSteps.size - 1) {
+            require( explanationSteps[i].isResetStep
+                    || CrypticClueExplanationUtils.isYieldRelation(explanationSteps[i], explanationSteps[i + 1])) {
                 "Explanation part $i is not compatible with explanation part ${i+1}."
             }
         }
