@@ -20,7 +20,7 @@ function InteractablePuzzle() {
     const ref = useRef<HTMLDivElement>(null);
 
     const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
-    const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares);
+    const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares, acrossCluePanelClues, downCluePanelClues);
 
     const { focus, actions } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
     const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle } = useInteractablePuzzleKeyboard(actions, focus);

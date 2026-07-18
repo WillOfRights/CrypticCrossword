@@ -63,7 +63,11 @@ export function getHighlightablePuzzleSquares(
 /**
  * Convert the given puzzle squares into their representation mapping each square to the clues it is part of.
  */
-export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): PuzzleSquareWithClues[][] {
+export function getSquareCluesArray(
+  puzzleSquares: PuzzleSquare[][],
+  acrossCluePanelClues: CluePanelClue[],
+  downCluePanelClues: CluePanelClue[])
+  : PuzzleSquareWithClues[][] {
   const puzzleSquareWithCluesArray: PuzzleSquareWithClues[][] = [];
 
   for (var rowIdx = 0; rowIdx < puzzleSquares.length; rowIdx++) {
@@ -84,11 +88,11 @@ export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): PuzzleSqua
           acrossClueNumber = squareLeftOfCurrent.acrossClueNumber;
         }
         else {
-          acrossClueNumber = current.number;
+          acrossClueNumber = _getNumberIfMatchesClue(current.number, acrossCluePanelClues);
         }
       }
       else {
-        acrossClueNumber = current.number;
+        acrossClueNumber = _getNumberIfMatchesClue(current.number, acrossCluePanelClues);
       }
       if (rowIdx > 0) {
         const squareAboveCurrent = puzzleSquareWithCluesArray[rowIdx - 1][colIdx];
@@ -96,14 +100,22 @@ export function getSquareCluesArray(puzzleSquares: PuzzleSquare[][]): PuzzleSqua
           downClueNumber = squareAboveCurrent.downClueNumber;
         }
         else {
-          downClueNumber = current.number;
+          downClueNumber = _getNumberIfMatchesClue(current.number, downCluePanelClues);
         }
       }
       else {
-        downClueNumber = current.number;
+        downClueNumber = _getNumberIfMatchesClue(current.number, downCluePanelClues);
       }
 
-      rowSquareClues.push({ ...current, acrossClueNumber, downClueNumber });
+      if (acrossClueNumber !== undefined) {
+        rowSquareClues.push({ ...current, acrossClueNumber, downClueNumber });
+      }
+      else if (downClueNumber !== undefined) {
+        rowSquareClues.push({ ...current, acrossClueNumber, downClueNumber });
+      }
+      else {
+        throw new Error(`Square at ${rowIdx}, ${colIdx} does not have a corresponding clue in either direction`);
+      }
     }
     puzzleSquareWithCluesArray.push(rowSquareClues);
   }
@@ -138,5 +150,15 @@ export function getStatefulCluePanelClues(
   }));
 
   return { acrossStatefulClues, downStatefulClues, };
+}
+
+/**
+ * Private helper to get a number, iff there is a matching clue panel clue with that number.
+ * Used so that we only define the across and down number of a row if they actually match a clue.
+ */
+function _getNumberIfMatchesClue(number: number | undefined, cluePanelClues: CluePanelClue[]): number | undefined {
+  return cluePanelClues.some(cluePanelClue => cluePanelClue.number === number)
+    ? number
+    : undefined;
 }
 

@@ -30,12 +30,33 @@ type LetterSquare = {
 type PuzzleSquare = LetterSquare | SquareType.BLOCK;
 
 /**
+ * A letter square that only corresponds to an across clue.
+ */
+type AcrossLetterSquareWithClue = LetterSquare & {
+    acrossClueNumber: number,
+    downClueNumber: undefined,
+}
+
+/**
+ * A letter square that only corresponds to a down clue.
+ */
+type DownLetterSquareWithClue = LetterSquare & {
+    acrossClueNumber: undefined,
+    downClueNumber: number,
+}
+
+/**
+ * A letter square that has both across and down clues.
+ */
+type LetterSquareWithBothClues = LetterSquare & {
+    acrossClueNumber: number,
+    downClueNumber: number,
+}
+
+/**
  * Type representing a letter square as well as the clues that the individual square is part of.
  */
-type LetterSquareWithClues = LetterSquare & {
-    acrossClueNumber?: number,
-    downClueNumber?: number,
-}
+type LetterSquareWithClues = AcrossLetterSquareWithClue | DownLetterSquareWithClue | LetterSquareWithBothClues;
 
 /**
  * Type representing any square as well as it's clue information.
