@@ -1,6 +1,6 @@
 import { CluePanelClue, CluePanelSolutionState, SolvableCluePanelClue, HighlightableCluePanelClue } from "../cluePanel/CluePanelTypes";
-import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight } from "../crosswordGrid/CrosswordGridTypes";
-import { InteractablePuzzleFocus, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
+import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight, LetterSquareWithClues, LetterSquareWithCluesAndIdxes } from "../crosswordGrid/CrosswordGridTypes";
+import { InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 
 /**
  * Get the highlightable puzzle squares as a 2d array based on the focus state of the interactable puzzle.
@@ -191,6 +191,48 @@ export function getHighlightableCluePanelClues(
   }));
 
   return { acrossHighlightableClues, downHighlightableClues, };
+}
+
+/**
+ * Function to invert puzzle squares with clues into a map from clues to their respective squares.
+ */
+export function getMapFromCluesToSquares(puzzleSquareWithCluesArray: PuzzleSquareWithClues[][])
+  : { acrossMap: Map<number, LetterSquareWithCluesAndIdxes[]>, downMap: Map<number, LetterSquareWithCluesAndIdxes[]> } {
+  const acrossMap = new Map<number, LetterSquareWithCluesAndIdxes[]>;
+  const downMap = new Map<number, LetterSquareWithCluesAndIdxes[]>;
+
+  for (let rowIdx = 0; rowIdx < puzzleSquareWithCluesArray.length; rowIdx++) {
+    for (let colIdx = 0; colIdx < puzzleSquareWithCluesArray[rowIdx].length; colIdx++) {
+      const currSquare = puzzleSquareWithCluesArray[rowIdx][colIdx];
+      if (currSquare === SquareType.BLOCK) { continue; }
+
+      const currSquareWithIdxes = {
+        ...currSquare,
+        rowIdx,
+        colIdx,
+      };
+      if (currSquare.acrossClueNumber !== undefined) {
+        const acrossValue = acrossMap.get(currSquare.acrossClueNumber);
+        if (acrossValue === undefined) {
+          acrossMap.set(currSquare.acrossClueNumber, [currSquareWithIdxes]);
+        }
+        else {
+          acrossValue.push(currSquareWithIdxes);
+        }
+      }
+      if (currSquare.downClueNumber !== undefined) {
+        const downValue = downMap.get(currSquare.downClueNumber);
+        if (downValue === undefined) {
+          downMap.set(currSquare.downClueNumber, [currSquareWithIdxes]);
+        }
+        else {
+          downValue.push(currSquareWithIdxes);
+        }
+      }
+    }
+  }
+
+  return { acrossMap, downMap };
 }
 
 /**

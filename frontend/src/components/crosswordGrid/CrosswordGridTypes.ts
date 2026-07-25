@@ -64,6 +64,15 @@ type LetterSquareWithClues = AcrossLetterSquareWithClue | DownLetterSquareWithCl
 type PuzzleSquareWithClues = LetterSquareWithClues | SquareType.BLOCK;
 
 /**
+ * Type representing a letter square with it's clue and index information, useful for when we are
+ * mapping the clue to it's associated letter squares.
+ */
+type LetterSquareWithCluesAndIdxes = LetterSquareWithClues & {
+    rowIdx: number,
+    colIdx: number,
+};
+
+/**
  * For all squares, indicates the different highlight states that can occur.
  */
 enum HighlightType {
@@ -95,6 +104,7 @@ export {
     PuzzleSquare,
     PuzzleSquareWithClues,
     LetterSquareWithClues,
+    LetterSquareWithCluesAndIdxes,
     HighlightType,
     PuzzleSquareWithHighlight,
 };

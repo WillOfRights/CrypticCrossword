@@ -1,24 +1,181 @@
-import { ClueDirection, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
-import { InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, InteractablePuzzleFocus } from "./InteractablePuzzleTypes";
+import { ClueDirection, LetterSquareWithClues, LetterSquareWithCluesAndIdxes, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
+import { InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, InteractablePuzzleFocus, NavigationDirection, ForwardsOrBackwards } from "./InteractablePuzzleTypes";
+import { getMapFromCluesToSquares } from "./InteractablePuzzleUtils";
+
+
+export const NAVIGATION_DIRECTION_TO_CLUE_DIRECTION = {
+  [NavigationDirection.RIGHT]: ClueDirection.ACROSS,
+  [NavigationDirection.DOWN]: ClueDirection.DOWN,
+  [NavigationDirection.LEFT]: ClueDirection.ACROSS,
+  [NavigationDirection.UP]: ClueDirection.DOWN,
+}
 
 /**
- * Helper to get the clue number from the given puzzle square in the proposed direction, or return
- * `undefined` if this is not valid (matches `isValidDirectionForPuzzleSquareWithClues`).
+ * Get the position of the next square in the puzzle in the given direction that is not a block type square.
+ * If movePastBlock is true we will navigate past blocks, if it is false we will halt when we reach a block.
  */
-function getClueNumberForSquareAndDirection(
-  puzzleSquareWithClues: PuzzleSquareWithClues,
-  clueDirection: ClueDirection): number | undefined {
-  if (puzzleSquareWithClues === SquareType.BLOCK) {
-    // Block squares are not valid for focus 
-    return undefined;
+export function getPositionOfNextSquareInDirection(
+  puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
+  rowIdx: number,
+  colIdx: number,
+  navigationDirection: NavigationDirection,
+  movePastBlock: boolean,
+): { rowIdx: number, colIdx: number } | undefined {
+
+  let nextRowIdx = rowIdx;
+  let nextColIdx = colIdx;
+  const increment = () => {
+    switch (navigationDirection) {
+      case NavigationDirection.RIGHT:
+        nextColIdx++;
+        break;
+      case NavigationDirection.DOWN:
+        nextRowIdx++;
+        break;
+      case NavigationDirection.LEFT:
+        nextColIdx--;
+        break;
+      case NavigationDirection.UP:
+        nextRowIdx--;
+        break;
+    }
+  };
+
+  increment();
+
+  while (0 <= nextRowIdx && 0 <= nextColIdx
+    && nextRowIdx < puzzleSquareWithCluesArray.length && nextColIdx < puzzleSquareWithCluesArray[nextRowIdx].length) {
+    const puzzleSquare = puzzleSquareWithCluesArray[nextRowIdx][nextColIdx];
+    if (puzzleSquare !== SquareType.BLOCK) {
+      return { rowIdx: nextRowIdx, colIdx: nextColIdx, };
+    }
+    else if (!movePastBlock) {
+      return undefined;
+    }
+
+    increment();
   }
 
-  if ((clueDirection === ClueDirection.ACROSS && puzzleSquareWithClues.acrossClueNumber !== undefined)) {
-    return puzzleSquareWithClues.acrossClueNumber;
+  return undefined;
+}
+
+/**
+ * Helper to find the next square from the current position in the given direction of clues.
+ * The specified square should be part of a clue in the given direction (not a block or only
+ * in the other direction).
+ */
+export function findNextFollowingClues(
+  puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
+  rowIdx: number,
+  colIdx: number,
+  clueDirection: ClueDirection,
+  forwardsOrBackwards: ForwardsOrBackwards,
+  skipFilledSquares: boolean,
+  allowWrap: boolean,
+): { rowIdx: number, colIdx: number } | undefined {
+  // Validations and variables in scope
+  const square = puzzleSquareWithCluesArray[rowIdx][colIdx];
+  if (square === SquareType.BLOCK) {
+    // Not applicable for this function
+    throw new Error("Illegal argument, do not call with block type square");
   }
-  if ((clueDirection === ClueDirection.DOWN && puzzleSquareWithClues.downClueNumber !== undefined)) {
-    return puzzleSquareWithClues.downClueNumber;
+  const { acrossMap, downMap, } = getMapFromCluesToSquares(puzzleSquareWithCluesArray);
+  const clueNumber = clueDirection === ClueDirection.ACROSS
+    ? square.acrossClueNumber
+    : square.downClueNumber;
+  if (clueNumber === undefined) {
+    throw new Error("Illegal argument, square does not exist in clue in given direction");
   }
+  const initialMap = clueDirection === ClueDirection.ACROSS
+    ? acrossMap
+    : downMap;
+
+  // Initial information about the starting position
+  const initialClueArray = initialMap.get(clueNumber);
+  if (initialClueArray === undefined) {
+    throw new Error("Parsed clue map did not contain clue.");
+  }
+  let startingSquareIdx = initialClueArray?.findIndex(square =>
+    square.rowIdx === rowIdx && square.colIdx === colIdx);
+  if (startingSquareIdx === undefined) {
+    throw new Error("Parsed clue map did not contain square.");
+  }
+
+  // Reusable scoped functions
+  const increment = (idx) => {
+    if (forwardsOrBackwards === ForwardsOrBackwards.FORWARDS) {
+      return idx + 1;
+    }
+    else {
+      return idx - 1;
+    }
+  };
+  const searchClueArray = (clueArray: LetterSquareWithCluesAndIdxes[], initialIdx: number) => {
+    let idx = initialIdx;
+
+    idx = increment(idx);
+    while (0 <= idx && idx < clueArray.length) {
+      if (!skipFilledSquares || clueArray[idx].fill.length === 0) {
+        return { rowIdx: clueArray[idx].rowIdx, colIdx: clueArray[idx].colIdx };
+      }
+
+      idx = increment(idx);
+    }
+
+    return undefined;
+  };
+  const searchMap = (
+    map: Map<number, LetterSquareWithCluesAndIdxes[]>,
+    initialClueNumber: number | undefined,
+    initialSquareIdx: number | undefined) => {
+    const sortedKeys = [...map.keys()].sort((a, b) => a - b);
+    const initialArrayIdx = initialClueNumber === undefined
+      ? 0
+      : sortedKeys.findIndex(clueNumber => clueNumber === initialClueNumber);
+    if (initialArrayIdx === undefined) {
+      throw new Error("Initial clue number not contained in map");
+    }
+    let idx = initialArrayIdx;
+
+    while (0 <= idx && idx < sortedKeys.length) {
+      const currArray = map.get(sortedKeys[idx]);
+      if (currArray === undefined) {
+        throw new Error("Sorted keys contains key not in map");
+      }
+      const initialIdx = (initialSquareIdx !== undefined && idx === initialArrayIdx)
+        ? initialSquareIdx
+        : forwardsOrBackwards === ForwardsOrBackwards.FORWARDS
+          ? -1
+          : currArray.length;
+
+      const searchedClueArray = searchClueArray(currArray, initialIdx);
+      if (searchedClueArray !== undefined) {
+        return searchedClueArray;
+      }
+
+      idx = increment(idx);
+    }
+
+    return undefined;
+  };
+
+  const searchedInitialMap = searchMap(initialMap, clueNumber, startingSquareIdx);
+  if (searchedInitialMap !== undefined) {
+    return searchedInitialMap;
+  }
+  if (allowWrap) {
+    const secondMap = clueDirection === ClueDirection.ACROSS
+      ? downMap
+      : acrossMap;
+    const searchedSecondMap = searchMap(secondMap, undefined, undefined);
+    if (searchedSecondMap !== undefined) {
+      return searchedSecondMap;
+    }
+
+    const finalSearch = searchMap(initialMap, undefined, undefined);
+    return finalSearch;
+  }
+
   return undefined;
 }
 
@@ -80,3 +237,23 @@ export function isValidProposedFocusedStateFromArray(
   return isValidDirectionForPuzzleSquareWithClues(puzzleSquareWithCluesArray[f.rowIdx][f.colIdx], f.direction);
 }
 
+/**
+ * Helper to get the clue number from the given puzzle square in the proposed direction, or return
+ * `undefined` if this is not valid (matches `isValidDirectionForPuzzleSquareWithClues`).
+ */
+function getClueNumberForSquareAndDirection(
+  puzzleSquareWithClues: PuzzleSquareWithClues,
+  clueDirection: ClueDirection): number | undefined {
+  if (puzzleSquareWithClues === SquareType.BLOCK) {
+    // Block squares are not valid for focus 
+    return undefined;
+  }
+
+  if ((clueDirection === ClueDirection.ACROSS && puzzleSquareWithClues.acrossClueNumber !== undefined)) {
+    return puzzleSquareWithClues.acrossClueNumber;
+  }
+  if ((clueDirection === ClueDirection.DOWN && puzzleSquareWithClues.downClueNumber !== undefined)) {
+    return puzzleSquareWithClues.downClueNumber;
+  }
+  return undefined;
+}

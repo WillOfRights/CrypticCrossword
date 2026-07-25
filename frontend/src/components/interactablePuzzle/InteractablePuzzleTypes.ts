@@ -26,11 +26,31 @@ type InteractablePuzzleFocusedFull = InteractablePuzzleFocusedState & {
  */
 type InteractablePuzzleFocus = InteractablePuzzleUnfocused.NOT_FOCUSED | InteractablePuzzleFocusedFull;
 
+/**
+ * The different cardinal directions we can navigate the puzzle.
+ */
+enum NavigationDirection {
+  RIGHT,
+  LEFT,
+  DOWN,
+  UP,
+};
+
+/**
+ * Forwards or backwards, relevant for navigating a clue.
+ */
+enum ForwardsOrBackwards {
+  FORWARDS,
+  BACKWARDS,
+}
+
 export {
   InteractablePuzzleUnfocused,
   InteractablePuzzleFocusedState,
   InteractablePuzzleFocusState,
   InteractablePuzzleFocusedFull,
   InteractablePuzzleFocus,
+  NavigationDirection,
+  ForwardsOrBackwards,
 }
 

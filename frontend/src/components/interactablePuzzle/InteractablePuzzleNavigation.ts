@@ -4,8 +4,8 @@ const { useState } = React;
 import { ClueDirection, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
 import { invertDirection, } from "../crosswordGrid/CrosswordGridUtils";
 
-import { InteractablePuzzleFocus, InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
-import { deriveInteractablePuzzleFocus, whenFocused, isValidProposedFocusedStateFromArray, } from "./InteractablePuzzleNavigationUtils";
+import { ForwardsOrBackwards, InteractablePuzzleFocus, InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, NavigationDirection } from "./InteractablePuzzleTypes";
+import { NAVIGATION_DIRECTION_TO_CLUE_DIRECTION, deriveInteractablePuzzleFocus, whenFocused, isValidProposedFocusedStateFromArray, getPositionOfNextSquareInDirection, findNextFollowingClues, } from "./InteractablePuzzleNavigationUtils";
 
 type InteractablePuzzleNavigationActions = {
   /**
@@ -45,26 +45,17 @@ type InteractablePuzzleNavigationActions = {
   ) => void,
 
   /**
-   * Move to the next cell in the puzzle that is not unfilled. First tries to complete the clue
-   * in the current direction, then tries all subsequent clues in the same direction, then restarts
-   * at the beginning and works through the clue lexicographically, soft retrying the opposite direction.
+   * Move to the first unfilled character in the current clue, or the next unfilled character 
+   * in the puzzle in the direction of focus.
    */
   moveToNextUnfilled: () => void,
-};
 
-enum NavigationDirection {
-  RIGHT,
-  LEFT,
-  DOWN,
-  UP,
+  /**
+   * Move to last character (matches delete last character from solvable actions) in the direction
+   * of focus.
+   */
+  moveToLastCharacter: () => void,
 };
-
-const NAVIGATION_DIRECTION_TO_CLUE_DIRECTION = {
-  [NavigationDirection.RIGHT]: ClueDirection.ACROSS,
-  [NavigationDirection.DOWN]: ClueDirection.DOWN,
-  [NavigationDirection.LEFT]: ClueDirection.ACROSS,
-  [NavigationDirection.UP]: ClueDirection.DOWN,
-}
 
 const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACROSS, };
 
@@ -96,38 +87,23 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
     };
   const moveUpdateFn = (
     navigationDirection: NavigationDirection,
+    movePastBlock: boolean,
   ) => (f: InteractablePuzzleFocusedState) => {
-    let rowIdx = f.rowIdx;
-    let colIdx = f.colIdx;
-    const increment = () => {
-      switch (navigationDirection) {
-        case NavigationDirection.RIGHT:
-          colIdx++;
-          break;
-        case NavigationDirection.DOWN:
-          rowIdx++;
-          break;
-        case NavigationDirection.LEFT:
-          colIdx--;
-          break;
-        case NavigationDirection.UP:
-          rowIdx--;
-          break;
-      }
-    };
-
-    increment();
-
-    while (0 <= rowIdx && 0 <= colIdx
-      && rowIdx < puzzleSquareWithCluesArray.length && colIdx < puzzleSquareWithCluesArray[rowIdx].length) {
-      const puzzleSquare = puzzleSquareWithCluesArray[rowIdx][colIdx];
-      if (puzzleSquare !== SquareType.BLOCK) {
-        return withSoftRetryDirection({ rowIdx, colIdx, direction: f.direction }, f);
-      }
-
-      increment();
+    const positionOfSquareInDirection = getPositionOfNextSquareInDirection(
+      puzzleSquareWithCluesArray,
+      f.rowIdx,
+      f.colIdx,
+      navigationDirection,
+      movePastBlock);
+    if (positionOfSquareInDirection !== undefined) {
+      return withSoftRetryDirection(
+        {
+          rowIdx: positionOfSquareInDirection.rowIdx,
+          colIdx: positionOfSquareInDirection.colIdx,
+          direction: f.direction
+        },
+        f);
     }
-
     return f;
   };
   const findFirstHighlightableSquare = () => {
@@ -140,7 +116,36 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
     }
     throw new Error("No non-block squares found, cannot select first square.");
   };
+  const moveToNextInDirection = (
+    forwardsOrBackwards: ForwardsOrBackwards,
+    skipFilledSquares: boolean,
+    allowWrap: boolean) =>
+    whenFocused((f: InteractablePuzzleFocusedState) => {
+      // Note that puzzle square with clues is not up to date with the fill updated asynchronously when this is called after inserting.
+      // However, this function does not need to be aware of what has been updated, instead it always moves to the next block which was
+      // previously unfilled, or does nothing if no squares are unfilled.
 
+      const currSquare = puzzleSquareWithCluesArray[f.rowIdx][f.colIdx];
+      if (currSquare === SquareType.BLOCK) {
+        // Invalid case: focused on a block
+        throw new Error("Focused on block!");
+      }
+
+      const nextUnfilled = findNextFollowingClues(
+        puzzleSquareWithCluesArray,
+        f.rowIdx,
+        f.colIdx,
+        f.direction,
+        forwardsOrBackwards,
+        skipFilledSquares,
+        allowWrap,
+      );
+
+      if (nextUnfilled !== undefined) {
+        return withSoftRetryDirection({ rowIdx: nextUnfilled.rowIdx, colIdx: nextUnfilled.colIdx, direction: f.direction }, f);
+      }
+      return f;
+    });
   // Navigation actions
   const unfocus = () => InteractablePuzzleUnfocused.NOT_FOCUSED;
 
@@ -165,14 +170,16 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
 
   const moveInDirection = (
     navigationDirection: NavigationDirection,
+    movePastBlock: boolean,
   ) =>
-    whenFocused(moveUpdateFn(navigationDirection));
+    whenFocused(moveUpdateFn(navigationDirection, movePastBlock));
 
   const moveOrToggleInDirection = (
     navigationDirection: NavigationDirection,
+    movePastBlock: boolean,
   ) =>
     whenFocused((f: InteractablePuzzleFocusedState) => {
-      const proposedMoveState = moveUpdateFn(navigationDirection)(f);
+      const proposedMoveState = moveUpdateFn(navigationDirection, movePastBlock)(f);
       if (f.direction !== NAVIGATION_DIRECTION_TO_CLUE_DIRECTION[navigationDirection]) {
         // Toggle the direction if it is possible, but otherwise move in the given direction
         return withProposedFocusedState({ ...f, direction: invertDirection(f.direction) }, proposedMoveState);
@@ -180,65 +187,22 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
       return proposedMoveState;
     });
 
-  const moveToNextUnfilled = () =>
-    whenFocused((f: InteractablePuzzleFocusedState) => {
-      // Note that puzzle square with clues is not up to date with the fill updated asynchronously when this is called after inserting.
-      // However, this function does not need to be aware of what has been updated, instead it always moves to the next block which was
-      // previously unfilled, or does nothing if no squares are unfilled.
+  const moveToNextUnfilled = () => {
+    return moveToNextInDirection(
+      ForwardsOrBackwards.FORWARDS,
+      true,
+      true,
+    );
+  };
 
-      const currSquare = puzzleSquareWithCluesArray[f.rowIdx][f.colIdx];
-      if (currSquare === SquareType.BLOCK) {
-        // Invalid case: focused on a block
-        throw new Error("Focused on block!");
-      }
+  const moveToLastCharacter = () => {
+    return moveToNextInDirection(
+      ForwardsOrBackwards.BACKWARDS,
+      false,
+      false,
+    );
+  }
 
-      // If we are navigating down, first check if there is a letter not completed in this direction
-      if (f.direction === ClueDirection.DOWN) {
-        let targetSquare: PuzzleSquareWithClues = currSquare;
-        let targetRowIdx = f.rowIdx;
-        while (targetSquare !== SquareType.BLOCK && targetRowIdx < puzzleSquareWithCluesArray.length - 1) {
-          targetRowIdx++;
-          targetSquare = puzzleSquareWithCluesArray[targetRowIdx][f.colIdx];
-          if (targetSquare !== SquareType.BLOCK && targetSquare.fill.length === 0) {
-            return { rowIdx: targetRowIdx, colIdx: f.colIdx, direction: ClueDirection.DOWN, };
-          }
-        }
-      }
-
-      // Then, navigate the whole puzzle starting from the current position to find an empty square
-      // in the same puzzle direction
-      for (let rowIdx = f.rowIdx; rowIdx < puzzleSquareWithCluesArray.length; rowIdx++) {
-        for (let colIdx = 0; colIdx < puzzleSquareWithCluesArray[rowIdx].length; colIdx++) {
-          if (rowIdx === f.rowIdx && colIdx <= f.colIdx) {
-            continue;
-          }
-          const square = puzzleSquareWithCluesArray[rowIdx][colIdx];
-          if (square !== SquareType.BLOCK && square.fill.length === 0) {
-            const proposedState = { rowIdx, colIdx, direction: f.direction };
-            if (isValidProposedFocusedStateFromArray(puzzleSquareWithCluesArray, proposedState)) {
-              return proposedState;
-            }
-          }
-        }
-      }
-
-      // If none are found, navigate the whole puzzle from the beginning, soft retrying the opposite
-      // direction if we find an empty square.
-      for (let rowIdx = 0; rowIdx < puzzleSquareWithCluesArray.length; rowIdx++) {
-        for (let colIdx = 0; colIdx < puzzleSquareWithCluesArray[rowIdx].length; colIdx++) {
-          const square = puzzleSquareWithCluesArray[rowIdx][colIdx];
-          if (square !== SquareType.BLOCK && square.fill.length === 0) {
-            const oppositeDirection = f.direction === ClueDirection.ACROSS
-              ? ClueDirection.DOWN
-              : ClueDirection.ACROSS;
-            return withSoftRetryDirection({ rowIdx, colIdx, direction: oppositeDirection }, f);
-          }
-        }
-      }
-
-      // Puzzle is entirely full
-      return f;
-    });
 
   return {
     focus: deriveInteractablePuzzleFocus(puzzleSquareWithCluesArray, focusState),
@@ -250,6 +214,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
       moveInDirection: asCallback(moveInDirection),
       moveOrToggleInDirection: asCallback(moveOrToggleInDirection),
       moveToNextUnfilled: asCallback(moveToNextUnfilled),
+      moveToLastCharacter: asCallback(moveToLastCharacter),
     },
   };
 }

@@ -27,7 +27,7 @@ function InteractablePuzzle() {
     const { acrossSolvableClues, downSolvableClues } = getSolvableCluePanelClues(acrossCluePanelClues, downCluePanelClues, puzzleSquareWithCluesArray);
 
     const { focus, navigationActions, } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
-    const { solvingActions, } = useInteractablePuzzleSolving(setPuzzleSquares, focus);
+    const { solvingActions, } = useInteractablePuzzleSolving(puzzleSquareWithCluesArray, setPuzzleSquares, focus);
     const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, } = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus, puzzleSquareWithCluesArray);
     const mouseActions = useInteractablePuzzleMouse(navigationActions, focus);
 
