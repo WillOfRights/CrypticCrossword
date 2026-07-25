@@ -43,6 +43,13 @@ type InteractablePuzzleNavigationActions = {
   moveOrToggleInDirection: (
     navigationDirection: NavigationDirection,
   ) => void,
+
+  /**
+   * Move to the next cell in the puzzle that is not unfilled. First tries to complete the clue
+   * in the current direction, then tries all subsequent clues in the same direction, then restarts
+   * at the beginning and works through the clue lexicographically, soft retrying the opposite direction.
+   */
+  moveToNextUnfilled: () => void,
 };
 
 enum NavigationDirection {
@@ -68,7 +75,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
   : { focus: InteractablePuzzleFocus, navigationActions: InteractablePuzzleNavigationActions } {
   const [focusState, setFocusState] = useState<InteractablePuzzleFocusState>(DEFAULT_FOCUS_STATE);
 
-  // Reused helpers that requre scoped variables
+  // Reused helpers that require scoped variables
 
   const asCallback = (action: (...args: any[]) => React.SetStateAction<InteractablePuzzleFocusState>) =>
     (...args: any[]) => {
@@ -173,6 +180,66 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
       return proposedMoveState;
     });
 
+  const moveToNextUnfilled = () =>
+    whenFocused((f: InteractablePuzzleFocusedState) => {
+      // Note that puzzle square with clues is not up to date with the fill updated asynchronously when this is called after inserting.
+      // However, this function does not need to be aware of what has been updated, instead it always moves to the next block which was
+      // previously unfilled, or does nothing if no squares are unfilled.
+
+      const currSquare = puzzleSquareWithCluesArray[f.rowIdx][f.colIdx];
+      if (currSquare === SquareType.BLOCK) {
+        // Invalid case: focused on a block
+        throw new Error("Focused on block!");
+      }
+
+      // If we are navigating down, first check if there is a letter not completed in this direction
+      if (f.direction === ClueDirection.DOWN) {
+        let targetSquare: PuzzleSquareWithClues = currSquare;
+        let targetRowIdx = f.rowIdx;
+        while (targetSquare !== SquareType.BLOCK && targetRowIdx < puzzleSquareWithCluesArray.length - 1) {
+          targetRowIdx++;
+          targetSquare = puzzleSquareWithCluesArray[targetRowIdx][f.colIdx];
+          if (targetSquare !== SquareType.BLOCK && targetSquare.fill.length === 0) {
+            return { rowIdx: targetRowIdx, colIdx: f.colIdx, direction: ClueDirection.DOWN, };
+          }
+        }
+      }
+
+      // Then, navigate the whole puzzle starting from the current position to find an empty square
+      // in the same puzzle direction
+      for (let rowIdx = f.rowIdx; rowIdx < puzzleSquareWithCluesArray.length; rowIdx++) {
+        for (let colIdx = 0; colIdx < puzzleSquareWithCluesArray[rowIdx].length; colIdx++) {
+          if (rowIdx === f.rowIdx && colIdx <= f.colIdx) {
+            continue;
+          }
+          const square = puzzleSquareWithCluesArray[rowIdx][colIdx];
+          if (square !== SquareType.BLOCK && square.fill.length === 0) {
+            const proposedState = { rowIdx, colIdx, direction: f.direction };
+            if (isValidProposedFocusedStateFromArray(puzzleSquareWithCluesArray, proposedState)) {
+              return proposedState;
+            }
+          }
+        }
+      }
+
+      // If none are found, navigate the whole puzzle from the beginning, soft retrying the opposite
+      // direction if we find an empty square.
+      for (let rowIdx = 0; rowIdx < puzzleSquareWithCluesArray.length; rowIdx++) {
+        for (let colIdx = 0; colIdx < puzzleSquareWithCluesArray[rowIdx].length; colIdx++) {
+          const square = puzzleSquareWithCluesArray[rowIdx][colIdx];
+          if (square !== SquareType.BLOCK && square.fill.length === 0) {
+            const oppositeDirection = f.direction === ClueDirection.ACROSS
+              ? ClueDirection.DOWN
+              : ClueDirection.ACROSS;
+            return withSoftRetryDirection({ rowIdx, colIdx, direction: oppositeDirection }, f);
+          }
+        }
+      }
+
+      // Puzzle is entirely full
+      return f;
+    });
+
   return {
     focus: deriveInteractablePuzzleFocus(puzzleSquareWithCluesArray, focusState),
     navigationActions: {
@@ -182,6 +249,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
       navigateToCell: asCallback(navigateToCell),
       moveInDirection: asCallback(moveInDirection),
       moveOrToggleInDirection: asCallback(moveOrToggleInDirection),
+      moveToNextUnfilled: asCallback(moveToNextUnfilled),
     },
   };
 }

@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, } from "react";
 
 import { PuzzleSquare, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
 import { InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
-import { isCapitalLatinLetter, } from "./InteractablePuzzleUtils";
+import { isCapitalLatinLetterOrEmpty, } from "./InteractablePuzzleUtils";
 
 type InteractablePuzzleSolvingActions = {
   insertCharacter: (character: string) => void,
@@ -19,7 +19,7 @@ function useInteractablePuzzleSolving(
     if (focus === InteractablePuzzleUnfocused.NOT_FOCUSED) {
       return;
     }
-    else if (!isCapitalLatinLetter(character)) {
+    else if (!isCapitalLatinLetterOrEmpty(character)) {
       return;
     }
 

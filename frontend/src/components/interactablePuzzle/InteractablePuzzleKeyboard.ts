@@ -2,6 +2,7 @@ import { InteractablePuzzleNavigationActions, NavigationDirection, } from "./Int
 import { InteractablePuzzleFocus, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
 import { isLatinLetter, } from "./InteractablePuzzleUtils";
 import { InteractablePuzzleSolvingActions } from "./InteractablePuzzleSolving";
+import { ClueDirection, PuzzleSquareWithClues, SquareType } from "../crosswordGrid/CrosswordGridTypes";
 
 type PuzzleKeyboardActions = {
   onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
@@ -22,7 +23,8 @@ const KEY_TO_NAVIGATION_DIRECTION = {
 function useInteractablePuzzleKeyboard(
   navigationActions: InteractablePuzzleNavigationActions,
   solvingActions: InteractablePuzzleSolvingActions,
-  focus: InteractablePuzzleFocus):
+  focus: InteractablePuzzleFocus,
+  puzzleSquaresWithCluesArray: PuzzleSquareWithClues[][]):
   PuzzleKeyboardActions {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -33,7 +35,25 @@ function useInteractablePuzzleKeyboard(
     }
     else if (isLatinLetter(e.key)) {
       solvingActions.insertCharacter(e.key.toUpperCase());
+      if (focus !== InteractablePuzzleUnfocused.NOT_FOCUSED) {
+        const square = puzzleSquaresWithCluesArray[focus.rowIdx][focus.colIdx];
+        if (square !== SquareType.BLOCK) {
+          if (square.fill.length === 0) {
+            navigationActions.moveToNextUnfilled();
+          }
+          else {
+            navigationActions.moveInDirection(focus.direction === ClueDirection.ACROSS
+              ? NavigationDirection.RIGHT
+              : NavigationDirection.DOWN);
+          }
+        }
+      }
     }
+    else if (e.key === "Backspace" || e.key === "Delete") {
+      // TODO: Backspace on an empty square should delete the prior letter
+      solvingActions.insertCharacter('');
+    }
+
   };
 
   const onFocusInteractivePuzzle = (e: React.FocusEvent<HTMLElement>) => {

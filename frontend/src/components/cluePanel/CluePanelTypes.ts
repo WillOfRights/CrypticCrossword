@@ -13,13 +13,33 @@ type CluePanelClue = {
 }
 
 /**
- * A clue panel clue, including information about the state of the
- * puzzle such as whether this clue hsa been answered or is currently
- * highlighted.
+ * The different solution states of a clue panel clue.
  */
-type StatefulCluePanelClue = CluePanelClue & {
-    isAnswered: boolean,
+enum CluePanelSolutionState {
+    NOT_COMPLETED,
+    COMPLETED_UNVERIFIED,
+    VERIFIED_CORRECT,
+    VERIFIED_INCORRECT,
+};
+
+/**
+ * A clue panel clue, including information about it's solution state in the puzzle.
+ */
+type SolvableCluePanelClue = CluePanelClue & {
+    solutionState: CluePanelSolutionState,
+};
+
+/**
+ * A solvable clue panel clue, as well as information about whether it is highlighted in the puzzle.
+ */
+type HighlightableCluePanelClue = SolvableCluePanelClue & {
     isHighlighted: boolean,
 }
 
-export { CluePanelClue, StatefulCluePanelClue, };
+export {
+    CluePanelClue,
+    CluePanelSolutionState,
+    SolvableCluePanelClue,
+    HighlightableCluePanelClue,
+};
+

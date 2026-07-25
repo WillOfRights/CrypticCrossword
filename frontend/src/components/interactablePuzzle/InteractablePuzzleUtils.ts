@@ -1,4 +1,4 @@
-import { CluePanelClue, StatefulCluePanelClue } from "../cluePanel/CluePanelTypes";
+import { CluePanelClue, CluePanelSolutionState, SolvableCluePanelClue, HighlightableCluePanelClue } from "../cluePanel/CluePanelTypes";
 import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight } from "../crosswordGrid/CrosswordGridTypes";
 import { InteractablePuzzleFocus, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
 
@@ -124,13 +124,56 @@ export function getSquareCluesArray(
 }
 
 /**
- * Get the clue panel clues with stateful information about their status in the puzzle.
+ * Get the clue panel clues with information about their solution state.
  */
-export function getStatefulCluePanelClues(
+export function getSolvableCluePanelClues(
   acrossCluePanelClues: CluePanelClue[],
   downCluePanelClues: CluePanelClue[],
+  puzzleSquaresWithCluesArray: PuzzleSquareWithClues[][],
+): { acrossSolvableClues: SolvableCluePanelClue[], downSolvableClues: SolvableCluePanelClue[] } {
+  const clueIsAnswered = (clueNumber: number, direction: ClueDirection) => {
+    return puzzleSquaresWithCluesArray.every(row => row.every(
+      puzzleSquareWithClue => {
+        if (puzzleSquareWithClue === SquareType.BLOCK) {
+          return true;
+        }
+        else if (direction === ClueDirection.ACROSS && puzzleSquareWithClue.acrossClueNumber === clueNumber) {
+          return puzzleSquareWithClue.fill.length !== 0;
+        }
+        else if (direction === ClueDirection.DOWN && puzzleSquareWithClue.downClueNumber === clueNumber) {
+          return puzzleSquareWithClue.fill.length !== 0;
+        }
+        else {
+          return true;
+        }
+      }
+    ));
+  };
+
+  const acrossSolvableClues = acrossCluePanelClues.map(clue => ({
+    ...clue,
+    solutionState: clueIsAnswered(clue.number, ClueDirection.ACROSS)
+      ? CluePanelSolutionState.COMPLETED_UNVERIFIED
+      : CluePanelSolutionState.NOT_COMPLETED,
+  }));
+  const downSolvableClues = downCluePanelClues.map(clue => ({
+    ...clue,
+    solutionState: clueIsAnswered(clue.number, ClueDirection.DOWN)
+      ? CluePanelSolutionState.COMPLETED_UNVERIFIED
+      : CluePanelSolutionState.NOT_COMPLETED,
+  }));
+
+  return { acrossSolvableClues, downSolvableClues, };
+}
+
+/**
+ * Get the clue panel clues with information about whether they are highlighted.
+ */
+export function getHighlightableCluePanelClues(
+  acrossCluePanelClues: SolvableCluePanelClue[],
+  downCluePanelClues: SolvableCluePanelClue[],
   interactablePuzzleFocus: InteractablePuzzleFocus,
-): { acrossStatefulClues: StatefulCluePanelClue[], downStatefulClues: StatefulCluePanelClue[] } {
+): { acrossHighlightableClues: HighlightableCluePanelClue[], downHighlightableClues: HighlightableCluePanelClue[] } {
   const clueMatchesFocus = (clueNumber: number, direction: ClueDirection) => {
     if (interactablePuzzleFocus === InteractablePuzzleUnfocused.NOT_FOCUSED) {
       return false;
@@ -138,18 +181,16 @@ export function getStatefulCluePanelClues(
     return clueNumber === interactablePuzzleFocus.clueNumber && direction === interactablePuzzleFocus.direction;
   }
 
-  const acrossStatefulClues = acrossCluePanelClues.map(clue => ({
+  const acrossHighlightableClues = acrossCluePanelClues.map(clue => ({
     ...clue,
-    isAnswered: false,
     isHighlighted: clueMatchesFocus(clue.number, ClueDirection.ACROSS),
   }));
-  const downStatefulClues = downCluePanelClues.map(clue => ({
+  const downHighlightableClues = downCluePanelClues.map(clue => ({
     ...clue,
-    isAnswered: false,
     isHighlighted: clueMatchesFocus(clue.number, ClueDirection.DOWN),
   }));
 
-  return { acrossStatefulClues, downStatefulClues, };
+  return { acrossHighlightableClues, downHighlightableClues, };
 }
 
 /**
@@ -160,7 +201,7 @@ export function isLatinLetter(key: string) { return /^[A-Za-z]$/.test(key) };
 /**
  * Check if a letter is a capital latin letter.
  */
-export function isCapitalLatinLetter(key: string) { return /^[A-Z]$/.test(key) };
+export function isCapitalLatinLetterOrEmpty(key: string) { return /^[A-Z]+$/.test(key) };
 
 /**
  * Private helper to get a number, iff there is a matching clue panel clue with that number.
