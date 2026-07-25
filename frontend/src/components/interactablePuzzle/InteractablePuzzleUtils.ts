@@ -201,7 +201,7 @@ export function isLatinLetter(key: string) { return /^[A-Za-z]$/.test(key) };
 /**
  * Check if a letter is a capital latin letter.
  */
-export function isCapitalLatinLetterOrEmpty(key: string) { return /^[A-Z]+$/.test(key) };
+export function isCapitalLatinLetterOrEmpty(key: string) { return /^[A-Z]?$/.test(key) };
 
 /**
  * Private helper to get a number, iff there is a matching clue panel clue with that number.
