@@ -12,15 +12,15 @@ type PuzzleMouseActions = {
 /**
  * Hook to get mouse controls for an interactable puzzle.
  */
-function useInteractablePuzzleMouse(actions: InteractablePuzzleNavigationActions, focus: InteractablePuzzleFocus):
+function useInteractablePuzzleMouse(navigationActions: InteractablePuzzleNavigationActions, focus: InteractablePuzzleFocus):
   PuzzleMouseActions {
   const onSquareClickForSquare = (rowIdx: number, colIdx: number) => {
     return () => {
       if (focus !== InteractablePuzzleUnfocused.NOT_FOCUSED && focus.rowIdx === rowIdx && focus.colIdx === colIdx) {
-        actions.toggleDirection();
+        navigationActions.toggleDirection();
       }
       else {
-        actions.navigateToCell(rowIdx, colIdx);
+        navigationActions.navigateToCell(rowIdx, colIdx);
       }
     }
   }

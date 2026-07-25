@@ -1,7 +1,7 @@
 import './InteractablePuzzle.scss';
 import * as React from 'react';
 
-const { useRef, useEffect } = React;
+const { useRef, useEffect, useState, } = React;
 
 import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
 import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
@@ -12,19 +12,23 @@ import { getHighlightablePuzzleSquares, getSquareCluesArray, getStatefulCluePane
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
 import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
+import { useInteractablePuzzleSolving } from "./InteractablePuzzleSolving";
 
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
  */
 function InteractablePuzzle() {
-    const ref = useRef<HTMLDivElement>(null);
+    const { initialPuzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
 
-    const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
+    const ref = useRef<HTMLDivElement>(null);
+    const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquare[][]>(initialPuzzleSquares);
+
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares, acrossCluePanelClues, downCluePanelClues);
 
-    const { focus, actions } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
-    const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle } = useInteractablePuzzleKeyboard(actions, focus);
-    const mouseActions = useInteractablePuzzleMouse(actions, focus);
+    const { focus, navigationActions, } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
+    const { solvingActions, } = useInteractablePuzzleSolving(setPuzzleSquares, focus);
+    const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, } = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus);
+    const mouseActions = useInteractablePuzzleMouse(navigationActions, focus);
 
     // Autofocus interactable puzzle on page load
     useEffect(() => {
@@ -55,7 +59,7 @@ function InteractablePuzzle() {
  * Get fake data for testing, delete this later.
  */
 function fakeData() {
-    const puzzleSquares: PuzzleSquare[][] = [
+    const initialPuzzleSquares: PuzzleSquare[][] = [
         [
             { squareType: SquareType.FILLABLE, fill: '', number: 1 },
             { squareType: SquareType.FILLABLE, fill: '', },
@@ -108,7 +112,7 @@ function fakeData() {
         { clueText: 'INC', number: 6, },
     ];
     return {
-        puzzleSquares,
+        initialPuzzleSquares,
         acrossCluePanelClues,
         downCluePanelClues,
     };

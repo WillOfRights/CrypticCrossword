@@ -153,6 +153,16 @@ export function getStatefulCluePanelClues(
 }
 
 /**
+ * Check if a letter is a latin letter (ignores caps).
+ */
+export function isLatinLetter(key: string) { return /^[A-Za-z]$/.test(key) };
+
+/**
+ * Check if a letter is a capital latin letter.
+ */
+export function isCapitalLatinLetter(key: string) { return /^[A-Z]$/.test(key) };
+
+/**
  * Private helper to get a number, iff there is a matching clue panel clue with that number.
  * Used so that we only define the across and down number of a row if they actually match a clue.
  */

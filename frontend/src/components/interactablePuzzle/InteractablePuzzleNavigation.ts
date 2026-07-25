@@ -65,7 +65,7 @@ const DEFAULT_FOCUS_STATE = { rowIdx: 0, colIdx: 0, direction: ClueDirection.ACR
  * Hook for navigation of the `InteractablePuzzle` component.
  */
 function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquareWithClues[][])
-  : { focus: InteractablePuzzleFocus, actions: InteractablePuzzleNavigationActions } {
+  : { focus: InteractablePuzzleFocus, navigationActions: InteractablePuzzleNavigationActions } {
   const [focusState, setFocusState] = useState<InteractablePuzzleFocusState>(DEFAULT_FOCUS_STATE);
 
   // Reused helpers that requre scoped variables
@@ -175,7 +175,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
 
   return {
     focus: deriveInteractablePuzzleFocus(puzzleSquareWithCluesArray, focusState),
-    actions: {
+    navigationActions: {
       unfocus: asCallback(unfocus),
       focusFirstSquare: asCallback(focusFirstSquare),
       toggleDirection: asCallback(toggleDirection),
