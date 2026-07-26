@@ -47,7 +47,7 @@ function useInteractablePuzzleKeyboard(
       // Insert a letter
       solvingActions.insertCharacter(e.key.toUpperCase());
       if (square.fill.length === 0) {
-        navigationActions.moveToNextUnfilled();
+        navigationActions.moveAfterEmptyInsert();
       }
       else {
         navigationActions.moveInDirection(focus.direction === ClueDirection.ACROSS

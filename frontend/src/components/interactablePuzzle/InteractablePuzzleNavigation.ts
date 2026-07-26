@@ -6,7 +6,6 @@ import { invertDirection, } from "../crosswordGrid/CrosswordGridUtils";
 
 import { ForwardsOrBackwards, InteractablePuzzleFocus, InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, NavigationDirection } from "./InteractablePuzzleTypes";
 import { NAVIGATION_DIRECTION_TO_CLUE_DIRECTION, deriveInteractablePuzzleFocus, whenFocused, isValidProposedFocusedStateFromArray, getPositionOfNextSquareInDirection, findNextFollowingClues, findFirstUnfilledSquareInClue, } from "./InteractablePuzzleNavigationUtils";
-import { getMapFromCluesToSquares } from './InteractablePuzzleUtils';
 
 type InteractablePuzzleNavigationActions = {
   /**
@@ -50,10 +49,18 @@ type InteractablePuzzleNavigationActions = {
   ) => void,
 
   /**
-   * Move to the first unfilled character in the current clue, or the next unfilled character 
-   * in the puzzle in the direction of focus.
+   * Move through the puzzle in the following order:
+   * 1. The next unfilled character in the current clue
+   * 2. The first unfilled character in the current clue (the current square is counted as filled)
+   * 3. The next unfilled character in the puzzle in the current direction
+   * 4. The first unfilled character in the puzzle in the opposite direction
+   * 5. The first unfilled character in the puzzle in current direction
+   * 6. Do nothing if the puzzle is filled
+   *
+   * This is a convenient and intuitive way to traverse the puzzle after you insert a character in
+   * a previously empty block.
    */
-  moveToNextUnfilled: () => void,
+  moveAfterEmptyInsert: () => void,
 
   /**
    * Move to last character (matches delete last character from solvable actions) in the direction
@@ -169,7 +176,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
     );
 
     if (nextUnfilled !== undefined) {
-      return withSoftRetryDirection({ rowIdx: nextUnfilled.rowIdx, colIdx: nextUnfilled.colIdx, direction: f.direction }, f);
+      return withHardFocusedState({ rowIdx: nextUnfilled.rowIdx, colIdx: nextUnfilled.colIdx, direction: nextUnfilled.direction });
     }
     return f;
   };
@@ -255,7 +262,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
 
   const moveToFirstUnfilledSquareForFocus = () => whenFocused(moveToFirstUnfilledForFocusFn);
 
-  const moveToNextUnfilled = () => whenFocused((f: InteractablePuzzleFocusedState) => {
+  const moveAfterEmptyInsert = () => whenFocused((f: InteractablePuzzleFocusedState) => {
     return moveToNextInDirectionFn(
       ForwardsOrBackwards.FORWARDS,
       true,
@@ -284,7 +291,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
       navigateToCell: asCallback(navigateToCell),
       moveInDirection: asCallback(moveInDirection),
       moveOrToggleInDirection: asCallback(moveOrToggleInDirection),
-      moveToNextUnfilled: asCallback(moveToNextUnfilled),
+      moveAfterEmptyInsert: asCallback(moveAfterEmptyInsert),
       moveToLastCharacter: asCallback(moveToLastCharacter),
       moveToFirstUnfilledSquareInClue: asCallback(moveToFirstUnfilledSquareInClue),
       moveToFirstUnfilledSquareForFocus: asCallback(moveToFirstUnfilledSquareForFocus)

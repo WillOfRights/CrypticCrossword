@@ -1,6 +1,7 @@
-import { ClueDirection, LetterSquareWithClues, LetterSquareWithCluesAndIdxes, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
+import { ClueDirection, LetterSquareWithCluesAndIdxes, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
 import { InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, InteractablePuzzleFocus, NavigationDirection, ForwardsOrBackwards } from "./InteractablePuzzleTypes";
 import { getMapFromCluesToSquares } from "./InteractablePuzzleUtils";
+import { invertDirection, } from "../crosswordGrid/CrosswordGridUtils";
 
 
 export const NAVIGATION_DIRECTION_TO_CLUE_DIRECTION = {
@@ -105,7 +106,7 @@ export function findNextFollowingClues(
   skipFilledSquares: boolean,
   allowWrap: boolean,
   firstTryStartOfClue: boolean,
-): { rowIdx: number, colIdx: number } | undefined {
+): { rowIdx: number, colIdx: number, direction: ClueDirection } | undefined {
   // Validations and variables in scope
   const square = puzzleSquareWithCluesArray[rowIdx][colIdx];
   if (square === SquareType.BLOCK) {
@@ -149,7 +150,11 @@ export function findNextFollowingClues(
     idx = increment(idx);
     while (0 <= idx && idx < clueArray.length) {
       if (!skipFilledSquares || clueArray[idx].fill.length === 0) {
-        return { rowIdx: clueArray[idx].rowIdx, colIdx: clueArray[idx].colIdx };
+        const { rowIdx: foundRowIdx, colIdx: foundColIdx } = clueArray[idx];
+        // Skip the square we are moving from
+        if (!(foundRowIdx === rowIdx && foundColIdx === colIdx)) {
+          return { rowIdx: foundRowIdx, colIdx: foundColIdx };
+        }
       }
 
       idx = increment(idx);
@@ -205,7 +210,7 @@ export function findNextFollowingClues(
 
   const searchedInitialMap = searchMap(initialMap, clueNumber, startingSquareIdx);
   if (searchedInitialMap !== undefined) {
-    return searchedInitialMap;
+    return { ...searchedInitialMap, direction: clueDirection };
   }
   if (allowWrap) {
     const secondMap = clueDirection === ClueDirection.ACROSS
@@ -213,11 +218,13 @@ export function findNextFollowingClues(
       : acrossMap;
     const searchedSecondMap = searchMap(secondMap, undefined, undefined);
     if (searchedSecondMap !== undefined) {
-      return searchedSecondMap;
+      return { ...searchedSecondMap, direction: invertDirection(clueDirection) };
     }
 
     const finalSearch = searchMap(initialMap, undefined, undefined);
-    return finalSearch;
+    if (finalSearch !== undefined) {
+      return { ...finalSearch, direction: clueDirection };
+    }
   }
 
   return undefined;
