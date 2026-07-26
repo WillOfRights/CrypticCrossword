@@ -28,7 +28,8 @@ function InteractablePuzzle() {
 
     const { focus, navigationActions, } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
     const { solvingActions, } = useInteractablePuzzleSolving(puzzleSquareWithCluesArray, setPuzzleSquares, focus);
-    const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, } = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus, puzzleSquareWithCluesArray);
+    const keyboardActions = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus, puzzleSquareWithCluesArray);
+    const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, } = keyboardActions;
     const mouseActions = useInteractablePuzzleMouse(navigationActions, focus);
 
     // Autofocus interactable puzzle on page load
@@ -50,7 +51,7 @@ function InteractablePuzzle() {
                 <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} mouseActions={mouseActions} />
             </div>
             <div className={'clue-panel-container'}>
-                <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} />
+                <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} keyboardActions={keyboardActions} />
             </div>
         </div>
     );

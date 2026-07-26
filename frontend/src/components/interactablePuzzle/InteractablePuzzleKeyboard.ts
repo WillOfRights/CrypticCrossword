@@ -8,6 +8,7 @@ type PuzzleKeyboardActions = {
   onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
   onFocusInteractivePuzzle: (e: React.FocusEvent<HTMLElement>) => void;
   onBlurInteractivePuzzle: (e: React.FocusEvent<HTMLElement>) => void;
+  onClickClue: (clueDirection: ClueDirection, clueNumber: number) => (e: React.MouseEvent) => void;
 };
 
 const KEY_TO_NAVIGATION_DIRECTION = {
@@ -81,9 +82,16 @@ function useInteractablePuzzleKeyboard(
     }
   };
 
-  return { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, };
+  const onClickClue = (clueDirection: ClueDirection, clueNumber: number) => {
+    return () => {
+      navigationActions.moveToFirstUnfilledSquareInClue(clueDirection, clueNumber);
+    };
+  };
+
+  return { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, onClickClue, };
 }
 
 export {
   useInteractablePuzzleKeyboard,
+  PuzzleKeyboardActions,
 }
