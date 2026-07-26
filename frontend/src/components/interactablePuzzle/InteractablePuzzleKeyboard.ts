@@ -41,7 +41,7 @@ function useInteractablePuzzleKeyboard(
     const navigationDirection = KEY_TO_NAVIGATION_DIRECTION[e.key];
     if (navigationDirection !== undefined) {
       // Move using arrow keys
-      navigationActions.moveOrToggleInDirection(navigationDirection);
+      navigationActions.moveOrToggleInDirection(navigationDirection, true);
     }
     else if (isLatinLetter(e.key)) {
       // Insert a letter
@@ -53,7 +53,8 @@ function useInteractablePuzzleKeyboard(
       else {
         navigationActions.moveInDirection(focus.direction === ClueDirection.ACROSS
           ? NavigationDirection.RIGHT
-          : NavigationDirection.DOWN);
+          : NavigationDirection.DOWN,
+          false);
       }
     }
     else if (e.key === "Backspace" || e.key === "Delete") {

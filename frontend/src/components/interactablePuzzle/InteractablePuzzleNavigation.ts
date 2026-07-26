@@ -31,17 +31,21 @@ type InteractablePuzzleNavigationActions = {
 
   /**
    * Move to the next cell in the given direction that is a letter square.
+   * movePastBlock controls whether we move past block squares while navigating in this direction.
    */
   moveInDirection: (
     navigationDirection: NavigationDirection,
+    movePastBlock: boolean,
   ) => void,
 
   /**
    * Move to the next cell in the given direction that is a letter square, but toggle direction
    * first if the direction navigating does not match the current highlighted direction.
+   * movePastBlock controls whether we move past block squares while navigating in this direction.
    */
   moveOrToggleInDirection: (
     navigationDirection: NavigationDirection,
+    movePastBlock: boolean,
   ) => void,
 
   /**
