@@ -56,6 +56,7 @@ function useInteractablePuzzleSolving(
       clueDirection,
       ForwardsOrBackwards.BACKWARDS,
       false,
+      false,
       false
     );
 

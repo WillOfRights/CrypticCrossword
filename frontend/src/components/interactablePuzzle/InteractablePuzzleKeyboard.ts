@@ -47,7 +47,6 @@ function useInteractablePuzzleKeyboard(
       // Insert a letter
       solvingActions.insertCharacter(e.key.toUpperCase());
       if (square.fill.length === 0) {
-        // TODO: Make this first go to the first unfilled in the clue first
         navigationActions.moveToNextUnfilled();
       }
       else {

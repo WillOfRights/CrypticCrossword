@@ -60,6 +60,38 @@ export function getPositionOfNextSquareInDirection(
 }
 
 /**
+ * Find the first unfilled square in the given clue. The ignoredSquare parameter gives a square
+ * to consider as filled (so that we can use this when inserting a letter as well).
+ */
+export function findFirstUnfilledSquareInClue(
+  puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
+  clueDirection: ClueDirection,
+  clueNumber: number,
+  ignoredSquare: { rowIdx: number, colIdx: number } | undefined = undefined) {
+  const { acrossMap, downMap } = getMapFromCluesToSquares(puzzleSquareWithCluesArray);
+  const map = clueDirection === ClueDirection.ACROSS
+    ? acrossMap
+    : downMap;
+  const clueArray = map.get(clueNumber);
+  if (clueArray === undefined) {
+    // Clue does not exist in direction
+    return undefined;
+  }
+
+  for (let idx = 0; idx < clueArray.length; idx++) {
+    const square = clueArray[idx];
+    const { rowIdx, colIdx } = square;
+    const skipSquare = ignoredSquare !== undefined
+      && (rowIdx === ignoredSquare.rowIdx && colIdx === ignoredSquare.colIdx);
+    if (square.fill.length === 0 && !skipSquare) {
+      return { rowIdx, colIdx, direction: clueDirection };
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Helper to find the next square from the current position in the given direction of clues.
  * The specified square should be part of a clue in the given direction (not a block or only
  * in the other direction).
@@ -72,6 +104,7 @@ export function findNextFollowingClues(
   forwardsOrBackwards: ForwardsOrBackwards,
   skipFilledSquares: boolean,
   allowWrap: boolean,
+  firstTryStartOfClue: boolean,
 ): { rowIdx: number, colIdx: number } | undefined {
   // Validations and variables in scope
   const square = puzzleSquareWithCluesArray[rowIdx][colIdx];
@@ -151,6 +184,17 @@ export function findNextFollowingClues(
       const searchedClueArray = searchClueArray(currArray, initialIdx);
       if (searchedClueArray !== undefined) {
         return searchedClueArray;
+      }
+
+      if (idx === initialArrayIdx && firstTryStartOfClue) {
+        const searchedClue = findFirstUnfilledSquareInClue(
+          puzzleSquareWithCluesArray,
+          clueDirection,
+          clueNumber,
+          { rowIdx, colIdx });
+        if (searchedClue !== undefined) {
+          return searchedClue;
+        }
       }
 
       idx = increment(idx);
