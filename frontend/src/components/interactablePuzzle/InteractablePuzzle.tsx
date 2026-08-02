@@ -13,6 +13,7 @@ import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation"
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
 import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
 import { useInteractablePuzzleSolving } from "./InteractablePuzzleSolving";
+import {useSocket} from "../../connections/webSocket/WebSocketProvider";
 
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
@@ -22,6 +23,7 @@ function InteractablePuzzle() {
 
     const ref = useRef<HTMLDivElement>(null);
     const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquare[][]>(initialPuzzleSquares);
+    const websocket = useSocket();
 
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares, acrossCluePanelClues, downCluePanelClues);
     const { acrossSolvableClues, downSolvableClues } = getSolvableCluePanelClues(acrossCluePanelClues, downCluePanelClues, puzzleSquareWithCluesArray);

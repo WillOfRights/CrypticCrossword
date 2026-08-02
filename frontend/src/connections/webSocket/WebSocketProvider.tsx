@@ -1,6 +1,10 @@
-import {createContext, ReactNode, useContext, useState} from "react";
+import * as React from 'react';
+
+const {createContext, useContext, useState} = React;
+import type {ReactNode} from 'react';
+
 import {WebSocketStatus} from "./WebSocketTypes";
-import {useWebSocket} from "./useWebSocket";
+import {useWebSocket} from "./WebSocket";
 
 interface WebSocketProviderProps {
     url: string,
