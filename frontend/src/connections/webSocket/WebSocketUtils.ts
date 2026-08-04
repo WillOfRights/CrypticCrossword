@@ -1,4 +1,4 @@
-export const PUZZLE_WS_URL_SUFFIX = 'ws/puzzle';
+export const GAME_WS_URL_SUFFIX = 'ws/game';
 
 /**
  * Helper function to get the web socket url given the suffix for the site.

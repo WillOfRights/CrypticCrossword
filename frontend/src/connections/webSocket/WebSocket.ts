@@ -19,6 +19,13 @@ const defaultOptions: UseWebSocketOptions = {
  */
 function useWebSocket({url, options = defaultOptions} : UseWebSocketProps) {
     const {onMessage, onOpen, onClose, reconnect} = options;
+
+    // Use a ref so that connect doesn't change identity after re-renders.
+    const callbacksRef = useRef({ onMessage, onOpen, onClose });
+    useEffect(() => {
+        callbacksRef.current = { onMessage, onOpen, onClose };
+    });
+
     const wsRef = useRef(null);
     const reconnectTimer = useRef(null);
     const attemptRef = useRef(0);
@@ -29,22 +36,22 @@ function useWebSocket({url, options = defaultOptions} : UseWebSocketProps) {
 
         socket.onopen = () => {
             attemptRef.current = 0;
-            onOpen();
+            callbacksRef.current.onOpen?.();
         };
 
         socket.onmessage = (event) => {
-            onMessage(JSON.parse(event.data));
+            callbacksRef.current.onMessage?.(JSON.parse(event.data));
         };
 
         socket.onclose = (event) => {
-            onClose(event);
+            callbacksRef.current?.onClose(event);
             if (reconnect && event.code !== 1000) {
                 scheduleReconnect();
             }
         };
 
         socket.onerror = () => socket.close();
-    }, [url, onMessage, onOpen, onClose, reconnect]);
+    }, [url, reconnect]);
 
     const scheduleReconnect = useCallback(() => {
         const attempt = attemptRef.current;
