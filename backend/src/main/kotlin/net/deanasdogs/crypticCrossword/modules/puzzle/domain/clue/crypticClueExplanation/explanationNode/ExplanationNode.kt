@@ -11,7 +11,6 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExp
  * explain and only contains the information needed to create the explanation steps.
  */
 abstract class ExplanationNode {
-
     /**
      * Function to process this `ExplanationNode`.
      */
@@ -19,19 +18,19 @@ abstract class ExplanationNode {
         /**
          * Function to add an explanation step (if needed any number of times) to the list of explanation steps.
          */
-        addExplanationStep: (CrypticClueExplanationStep) -> Nothing,
+        addExplanationStep: (CrypticClueExplanationStep) -> Unit,
         /**
          * Takes in a list of `CrypticClueExplanationPart`, and returns the list of explanation parts for the whole rest
          * of the clue. Passed by the parent so that each child is only responsible for the transformation that it
          * needs to reveal for processing.
          */
-        constructAsExplanationParts: (List<CrypticClueExplanationPart>) -> List<CrypticClueExplanationPart>)
+        constructAsExplanationParts: (List<CrypticClueExplanationPart>) -> List<CrypticClueExplanationPart>,
+    )
 
     /**
      * Get this node as an ignored explanation part (used when this is not the part being revealed).
      */
     abstract fun getAsIgnoredPart(): CrypticClueExplanationPart.ExplanationIgnoredPart
-
 
     /**
      * Get this node as a yielded explanation part (or null if it does not yield anything). Referenced by the parent
@@ -52,7 +51,6 @@ abstract class ExplanationNode {
      * of showing how it changes the yielded text, it will display as these nodes. This allows for self-explanatory
      * parts like fodder to not require their own step.
      */
-    fun getAsPartsConsideredYielded(): List<CrypticClueExplanationPart> {
-        return listOfNotNull(getAsYieldedPart())
-    }
+    fun getAsPartsConsideredYielded(): List<CrypticClueExplanationPart> = listOfNotNull(getAsYieldedPart())
 }
+

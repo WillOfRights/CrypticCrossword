@@ -49,10 +49,11 @@ data class CrypticJuxtaposition(
     override val yield: String =
         if (indicator != null && !indicator.isBefore) {
             children
-                .filterIsInstance<CrypticWordplay>()[1].yield
+                .filterIsInstance<CrypticWordplay>()[1]
+                .yield
                 .plus(children.filterIsInstance<CrypticWordplay>()[0].yield)
         } else {
-            children.filterIsInstance<CrypticWordplay>().joinToString(separator="") { it.yield }
+            children.filterIsInstance<CrypticWordplay>().joinToString(separator = "") { it.yield }
         }
 
     override fun getWordplayExplanationNode(): WordplayExplanationNode {
@@ -60,11 +61,12 @@ data class CrypticJuxtaposition(
             clueText,
             children
                 .filterIsInstance<CrypticWordplay>()
-                .map {it.getWordplayExplanationNode()},
-            yield) {
+                .map { it.getWordplayExplanationNode() },
+            yield,
+        ) {
             override fun localConstructAsExplanationParts(
                 childClueParts: List<List<CrypticClueExplanationPart>>,
-                revealOwnIndicator: Boolean
+                revealOwnIndicator: Boolean,
             ): List<CrypticClueExplanationPart> {
                 var wordplayChildrenCount = 0
                 val constructedList: MutableList<CrypticClueExplanationPart> = mutableListOf()
@@ -75,21 +77,20 @@ data class CrypticJuxtaposition(
                             constructedList.add(part)
                         }
                         wordplayChildrenCount++
-                    }
-                    else if (revealOwnIndicator && child is CrypticIndicator<*>) {
-                        constructedList.add(CrypticClueExplanationPart.ExplanationIndicatorPart(
-                            child.clueText,
-                            ExplanationIndicatorType.JUXTAPOSITION
-                        ))
-                    }
-                    else {
+                    } else if (revealOwnIndicator && child is CrypticIndicator<*>) {
+                        constructedList.add(
+                            CrypticClueExplanationPart.ExplanationIndicatorPart(
+                                child.clueText,
+                                ExplanationIndicatorType.JUXTAPOSITION,
+                            ),
+                        )
+                    } else {
                         constructedList.add(CrypticClueExplanationPart.ExplanationIgnoredPart(child.clueText))
                     }
                 }
 
                 return constructedList
             }
-
         }
     }
 }
