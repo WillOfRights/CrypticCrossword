@@ -51,7 +51,7 @@ abstract class SimpleWordplayExplanationNode(
         // Then, add this as an explanation step to complete processing this node
         addExplanationStep(
             CrypticClueExplanationStep(
-                baseExplanationParts.joinToString(""),
+                baseExplanationParts.map { it.text }.joinToString(""),
                 baseExplanationParts,
                 yieldedExplanationParts,
             ),
@@ -106,4 +106,3 @@ abstract class SimpleWordplayExplanationNode(
         }
     }
 }
-

@@ -105,4 +105,3 @@ data class CrypticDoubleDefinition(
         TODO("Not implemented")
     }
 }
-

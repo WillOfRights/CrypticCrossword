@@ -26,12 +26,6 @@ data class CrypticSynonym(
             override fun localConstructAsExplanationParts(
                 childClueParts: List<List<CrypticClueExplanationPart>>,
                 revealOwnIndicator: Boolean,
-            ): List<CrypticClueExplanationPart> =
-                if (revealOwnIndicator) {
-                    listOf(CrypticClueExplanationPart.ExplanationYieldedPart(clueText, true))
-                } else {
-                    listOf(CrypticClueExplanationPart.ExplanationIgnoredPart(clueText))
-                }
+            ): List<CrypticClueExplanationPart> = listOf(CrypticClueExplanationPart.ExplanationIgnoredPart(clueText))
         }
 }
-
