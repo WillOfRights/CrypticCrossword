@@ -45,7 +45,7 @@ abstract class SimpleWordplayExplanationNode(
             )
         val yieldedExplanationParts =
             constructAsExplanationParts(
-                listOf(CrypticClueExplanationPart.ExplanationYieldedPart(yield, true)),
+                listOf(CrypticClueExplanationPart.ExplanationYieldedPart(yield)),
             )
 
         // Then, add this as an explanation step to complete processing this node
@@ -62,7 +62,7 @@ abstract class SimpleWordplayExplanationNode(
         CrypticClueExplanationPart.ExplanationIgnoredPart(text)
 
     override fun getAsYieldedPart(): CrypticClueExplanationPart.ExplanationYieldedPart =
-        CrypticClueExplanationPart.ExplanationYieldedPart(yield, true)
+        CrypticClueExplanationPart.ExplanationYieldedPart(yield)
 
     override fun getAsFinalRevealedParts(): List<CrypticClueExplanationPart> =
         localConstructAsExplanationParts(

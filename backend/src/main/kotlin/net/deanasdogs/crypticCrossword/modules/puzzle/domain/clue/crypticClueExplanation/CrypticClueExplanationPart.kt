@@ -24,7 +24,9 @@ sealed class CrypticClueExplanationPart {
      * Definition in part of an explanation for a cryptic clue.
      */
     @SerialName("CrypticExplanationDefinition")
-    data class ExplanationDefinitionPart(override val text: String): CrypticClueExplanationPart() {
+    data class ExplanationDefinitionPart(
+        override val text: String,
+    ) : CrypticClueExplanationPart() {
         override val isYieldedText = false
     }
 
@@ -32,7 +34,9 @@ sealed class CrypticClueExplanationPart {
      * Fodder in part of an explanation for a cryptic clue.
      */
     @SerialName("CrypticExplanationFodder")
-    data class ExplanationFodderPart(override val text: String): CrypticClueExplanationPart() {
+    data class ExplanationFodderPart(
+        override val text: String,
+    ) : CrypticClueExplanationPart() {
         override val isYieldedText = false
     }
 
@@ -42,8 +46,8 @@ sealed class CrypticClueExplanationPart {
     @SerialName("CrypticExplanationIndicator")
     data class ExplanationIndicatorPart(
         override val text: String,
-        val indicatorType: ExplanationIndicatorType)
-        : CrypticClueExplanationPart() {
+        val indicatorType: ExplanationIndicatorType,
+    ) : CrypticClueExplanationPart() {
         override val isYieldedText = false
     }
 
@@ -53,8 +57,8 @@ sealed class CrypticClueExplanationPart {
     @SerialName("CrypticExplanationSelected")
     data class ExplanationSelectedPart(
         override val text: String,
-        val containedParts: List<CrypticClueExplanationPart>)
-        : CrypticClueExplanationPart() {
+        val containedParts: List<CrypticClueExplanationPart>,
+    ) : CrypticClueExplanationPart() {
         override val isYieldedText = false
     }
 
@@ -64,8 +68,7 @@ sealed class CrypticClueExplanationPart {
     @SerialName("CrypticExplanationYield")
     data class ExplanationYieldedPart(
         override val text: String,
-        val isYieldedByExplanationStep: Boolean)
-        : CrypticClueExplanationPart() {
+    ) : CrypticClueExplanationPart() {
         override val isYieldedText = true
     }
 
@@ -73,7 +76,9 @@ sealed class CrypticClueExplanationPart {
      * Ignored text in part of an explanation for a cryptic clue.
      */
     @SerialName("CrypticExplanationIgnored")
-    data class ExplanationIgnoredPart(override val text: String): CrypticClueExplanationPart() {
+    data class ExplanationIgnoredPart(
+        override val text: String,
+    ) : CrypticClueExplanationPart() {
         override val isYieldedText = false
     }
 
@@ -81,7 +86,9 @@ sealed class CrypticClueExplanationPart {
      * Link word(s) in part of an explanation for a cryptic clue.
      */
     @SerialName("CrypticExplanationLink")
-    data class ExplanationLinkPart(override val text: String): CrypticClueExplanationPart() {
+    data class ExplanationLinkPart(
+        override val text: String,
+    ) : CrypticClueExplanationPart() {
         override val isYieldedText = false
     }
 }
