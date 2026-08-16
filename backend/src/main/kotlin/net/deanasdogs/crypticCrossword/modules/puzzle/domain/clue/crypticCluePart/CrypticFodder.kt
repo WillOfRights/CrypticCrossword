@@ -12,7 +12,7 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExp
  * This can be an abbreviation or a straight definition (such as part of a charades clue).
  */
 @Serializable
-@SerialName("crypticSynonym")
+@SerialName("crypticFodder")
 data class CrypticFodder(
     override val clueText: String,
     override val yield: String,
