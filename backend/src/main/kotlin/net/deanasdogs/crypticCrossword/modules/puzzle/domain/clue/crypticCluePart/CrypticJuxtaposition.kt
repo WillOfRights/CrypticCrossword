@@ -64,6 +64,7 @@ data class CrypticJuxtaposition(
                 .map { it.getWordplayExplanationNode() },
             yield,
         ) {
+            // TODO: If there is no indicator, we shouldn't have this require an explanation step
             override fun localConstructAsExplanationParts(
                 childClueParts: List<List<CrypticClueExplanationPart>>,
                 revealOwnIndicator: Boolean,

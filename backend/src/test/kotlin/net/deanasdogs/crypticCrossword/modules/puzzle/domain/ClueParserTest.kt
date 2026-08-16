@@ -35,6 +35,7 @@ class ClueParserTest(
         answer: String,
         baseCrypticClueJson: String,
         baseCrypticCluePart: BaseCrypticCluePart,
+        explanationLength: Int,
     ) {
         val parsedClueResult = clueParser.parseCrypticClue(clueText, answer, baseCrypticClueJson)
 
@@ -58,8 +59,9 @@ class ClueParserTest(
         Assertions.assertEquals(parsedClue.baseCrypticCluePart, baseCrypticCluePart)
             { "DTO parsed did not match what was expected by test case." }
 
-        // Verify that we can parse into an explanation
-        parsedClue.baseCrypticCluePart.getExplanation()
+        // Verify that we can parse into an explanation of the expected length
+        val explanation = parsedClue.baseCrypticCluePart.getExplanation()
+        Assertions.assertEquals(explanation.explanationSteps.size, explanationLength)
     }
 
     companion object {
@@ -86,6 +88,7 @@ class ClueParserTest(
                                 CrypticDefinition("def2", "FOO", isPrimaryDefinition = false),
                             ),
                     ),
+                    2,
                 ),
                 // Double definition with link word
                 Arguments.of(
@@ -111,6 +114,7 @@ class ClueParserTest(
                                 CrypticDefinition("def2", "FOO", isPrimaryDefinition = false),
                             ),
                     ),
+                    2,
                 ),
                 // Cryptic juxtaposition without indicator
                 Arguments.of(
@@ -143,6 +147,7 @@ class ClueParserTest(
                                 ),
                             ),
                     ),
+                    3, // TODO: Make this 2 when non-indicator juxtapositions do not require a step
                 ),
                 // Cryptic juxtaposition with indicator
                 Arguments.of(
@@ -179,6 +184,7 @@ class ClueParserTest(
                                 ),
                             ),
                     ),
+                    3,
                 ),
             )
 
