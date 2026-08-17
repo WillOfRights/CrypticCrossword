@@ -15,8 +15,8 @@ data class CrypticClueExplanationStep(
     val yieldedExplanationParts: List<CrypticClueExplanationPart>,
     /**
      * Occasionally at the end, we reset to the full clue text rather than the yielded text. This occurs at the end of
-     * a clue to show the full clue again, or in an &lit to reveal the whole clue is the definition. Therefore, this is
-     * the only case where the explanation step is not compatible with the next step.
+     * an explanation to show the full clue again, or in an &lit to reveal the whole clue is the definition. Therefore,
+     * this is the only case where the explanation step is not compatible with the next step.
      */
     val isResetStep: Boolean = false,
 ) {

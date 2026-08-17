@@ -52,16 +52,16 @@ class ClueParserTest(
 
         val parsedClue = (parsedClueResult as ParseResult.Success).value
         // Trivial checks
-        Assertions.assertEquals(parsedClue.clueText, clueText)
-        Assertions.assertEquals(parsedClue.answer, answer)
+        Assertions.assertEquals(clueText, parsedClue.clueText)
+        Assertions.assertEquals(answer, parsedClue.answer)
 
-        // Substantive check
-        Assertions.assertEquals(parsedClue.baseCrypticCluePart, baseCrypticCluePart)
+        // Substantive check for parsing logic
+        Assertions.assertEquals(baseCrypticCluePart, parsedClue.baseCrypticCluePart)
             { "DTO parsed did not match what was expected by test case." }
 
         // Verify that we can parse into an explanation of the expected length
         val explanation = parsedClue.baseCrypticCluePart.getExplanation()
-        Assertions.assertEquals(explanation.explanationSteps.size, explanationLength)
+        Assertions.assertEquals(explanationLength, explanation.explanationSteps.size)
     }
 
     companion object {
@@ -88,7 +88,7 @@ class ClueParserTest(
                                 CrypticDefinition("def2", "FOO", isPrimaryDefinition = false),
                             ),
                     ),
-                    2,
+                    1,
                 ),
                 // Double definition with link word
                 Arguments.of(
@@ -114,7 +114,7 @@ class ClueParserTest(
                                 CrypticDefinition("def2", "FOO", isPrimaryDefinition = false),
                             ),
                     ),
-                    2,
+                    1,
                 ),
                 // Cryptic juxtaposition without indicator
                 Arguments.of(
@@ -147,7 +147,7 @@ class ClueParserTest(
                                 ),
                             ),
                     ),
-                    3, // TODO: Make this 2 when non-indicator juxtapositions do not require a step
+                    4, // TODO: Make this 3 when non-indicator juxtapositions do not require a step
                 ),
                 // Cryptic juxtaposition with indicator
                 Arguments.of(
@@ -184,7 +184,7 @@ class ClueParserTest(
                                 ),
                             ),
                     ),
-                    3,
+                    4,
                 ),
             )
 

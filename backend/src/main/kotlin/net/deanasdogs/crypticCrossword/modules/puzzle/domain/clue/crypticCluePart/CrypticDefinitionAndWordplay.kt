@@ -113,6 +113,24 @@ data class CrypticDefinitionAndWordplay(
             },
         )
 
+        val finalRevealedParts: List<CrypticClueExplanationPart> =
+            children.flatMap {
+                when {
+                    (it is CrypticWordplay) -> it.getWordplayExplanationNode().getAsFinalRevealedParts()
+                    (it is CrypticDefinition) -> listOf(CrypticClueExplanationPart.ExplanationDefinitionPart(it.clueText))
+                    (it is CrypticLinkWord) -> listOf(CrypticClueExplanationPart.ExplanationLinkPart(it.clueText))
+                    else -> listOf(CrypticClueExplanationPart.ExplanationIgnoredPart(it.clueText))
+                }
+            }
+        val finalExplanationStep =
+            CrypticClueExplanationStep(
+                clueText,
+                listOf(CrypticClueExplanationPart.ExplanationIgnoredPart(clueText)),
+                finalRevealedParts,
+                true,
+            )
+        explanationSteps.add(finalExplanationStep)
+
         return CrypticClueExplanation(
             clueText,
             explanationSteps,

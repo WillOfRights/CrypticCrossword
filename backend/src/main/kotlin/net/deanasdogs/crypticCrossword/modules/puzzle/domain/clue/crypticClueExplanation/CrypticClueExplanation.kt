@@ -18,7 +18,7 @@ data class CrypticClueExplanation(
         }
         for (i in 0 until explanationSteps.size - 1) {
             require(
-                explanationSteps[i].isResetStep ||
+                explanationSteps[i + 1].isResetStep ||
                     CrypticClueExplanationUtils.isYieldRelation(explanationSteps[i], explanationSteps[i + 1]),
             ) {
                 "Explanation part $i is not compatible with explanation part ${i + 1}."
