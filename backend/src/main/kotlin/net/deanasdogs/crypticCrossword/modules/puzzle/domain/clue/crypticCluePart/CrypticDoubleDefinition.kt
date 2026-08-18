@@ -101,7 +101,10 @@ data class CrypticDoubleDefinition(
         )
     }
 
-    override fun getExplanation(): CrypticClueExplanation {
-        TODO("Not implemented")
-    }
+    override fun getExplanation(): CrypticClueExplanation =
+        CrypticClueExplanation(
+            clueText,
+            listOf(BaseCrypticCluePart.getFinalExplanationStep(clueText, children)),
+            yield,
+        )
 }
