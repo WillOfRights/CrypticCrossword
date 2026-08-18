@@ -23,6 +23,7 @@ sealed class CrypticClueExplanationPart {
     /**
      * Definition in part of an explanation for a cryptic clue.
      */
+    @Serializable
     @SerialName("CrypticExplanationDefinition")
     data class ExplanationDefinitionPart(
         override val text: String,
@@ -33,6 +34,7 @@ sealed class CrypticClueExplanationPart {
     /**
      * Fodder in part of an explanation for a cryptic clue.
      */
+    @Serializable
     @SerialName("CrypticExplanationFodder")
     data class ExplanationFodderPart(
         override val text: String,
@@ -43,6 +45,7 @@ sealed class CrypticClueExplanationPart {
     /**
      * Indicator in part of an explanation for a cryptic clue.
      */
+    @Serializable
     @SerialName("CrypticExplanationIndicator")
     data class ExplanationIndicatorPart(
         override val text: String,
@@ -54,6 +57,7 @@ sealed class CrypticClueExplanationPart {
     /**
      * Selected part(s) in part of an explanation for a cryptic clue, containing a list of other parts.
      */
+    @Serializable
     @SerialName("CrypticExplanationSelected")
     data class ExplanationSelectedPart(
         override val text: String,
@@ -65,6 +69,7 @@ sealed class CrypticClueExplanationPart {
     /**
      * Yielded text in part of an explanation for a cryptic clue.
      */
+    @Serializable
     @SerialName("CrypticExplanationYield")
     data class ExplanationYieldedPart(
         override val text: String,
@@ -75,6 +80,7 @@ sealed class CrypticClueExplanationPart {
     /**
      * Ignored text in part of an explanation for a cryptic clue.
      */
+    @Serializable
     @SerialName("CrypticExplanationIgnored")
     data class ExplanationIgnoredPart(
         override val text: String,
@@ -85,6 +91,7 @@ sealed class CrypticClueExplanationPart {
     /**
      * Link word(s) in part of an explanation for a cryptic clue.
      */
+    @Serializable
     @SerialName("CrypticExplanationLink")
     data class ExplanationLinkPart(
         override val text: String,
