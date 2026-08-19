@@ -1,16 +1,29 @@
 import './InteractablePuzzle.scss';
 import * as React from 'react';
+import * as z from 'zod';
+
+const { useState, } = React;
 
 import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
 import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue } from "../cluePanel/CluePanelTypes";
+import { CrypticClueExplanationBox, } from '../clueExplanation/ClueExplanation';
+import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
 
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
  */
 function InteractablePuzzle() {
     const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
+    const [crypticClueExplanation, setCrypticClueExplanation] = useState<CrypticClueExplanationType | undefined>(undefined);
+
+    fetch('/explain').then(value => {
+        value.json().then(
+            res => setCrypticClueExplanation(z.parse(CrypticClueExplanation, res))
+        );
+    });
+
     return (
         <div className={'interactable-puzzle'}>
             <div className={'grid-container'}>
@@ -18,6 +31,13 @@ function InteractablePuzzle() {
             </div>
             <div className={'clue-panel-container'}>
                 <CluePanel acrossCluePanelClues={acrossCluePanelClues} downCluePanelClues={downCluePanelClues} />
+            </div>
+            <div className={'explanation-box-container'}>
+                {
+                    crypticClueExplanation !== undefined ?
+                        <CrypticClueExplanationBox crypticClueExplanation={crypticClueExplanation} />
+                        : null
+                }
             </div>
         </div>
     );
