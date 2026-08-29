@@ -24,7 +24,8 @@ function InteractablePuzzle() {
     const ref = useRef<HTMLDivElement>(null);
     const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquare[][]>(initialPuzzleSquares);
     const websocket = useSocket();
-    websocket.send('foo');
+    websocket.send('DOWN');
+    websocket.send('ACROSS');
 
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares, acrossCluePanelClues, downCluePanelClues);
     const { acrossSolvableClues, downSolvableClues } = getSolvableCluePanelClues(acrossCluePanelClues, downCluePanelClues, puzzleSquareWithCluesArray);

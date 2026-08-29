@@ -7,7 +7,7 @@ interface UseWebSocketProps {
 }
 
 const defaultOptions: UseWebSocketOptions = {
-    onMessage: () => {},
+    onMessage: (data: any) => {},
     onOpen: () => {},
     onClose: (event: CloseEvent) => {},
     reconnect: true,

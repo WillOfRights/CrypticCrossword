@@ -18,7 +18,7 @@ function WebSocketProvider({url, children}: WebSocketProviderProps) {
     const ws = useWebSocket({
         url,
         options: {
-            onMessage: () => {},
+            onMessage: (data: any) => {console.log(data)},
             onOpen: () => {setStatus(WebSocketStatus.CONNECTED)},
             onClose: () => {setStatus(WebSocketStatus.DISCONNECTED)},
             reconnect: true,
