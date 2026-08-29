@@ -2,6 +2,10 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticCluePa
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExplanation.CrypticClueExplanationPart
+import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExplanation.ExplanationIndicatorType
+import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExplanation.explanationNode.SimpleWordplayExplanationNode
+import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExplanation.explanationNode.WordplayExplanationNode
 import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticCluePart.common.ParentCluePart
 
 /**
@@ -50,6 +54,44 @@ data class CrypticJuxtaposition(
         } else {
             children.filterIsInstance<CrypticWordplay>().joinToString(separator="") { it.yield }
         }
+
+    override fun getWordplayExplanationNode(): WordplayExplanationNode {
+        return object : SimpleWordplayExplanationNode(
+            clueText,
+            children
+                .filterIsInstance<CrypticWordplay>()
+                .map {it.getWordplayExplanationNode()},
+            yield) {
+            override fun localConstructAsExplanationParts(
+                childClueParts: List<List<CrypticClueExplanationPart>>,
+                revealOwnIndicator: Boolean
+            ): List<CrypticClueExplanationPart> {
+                var wordplayChildrenCount = 0
+                val constructedList: MutableList<CrypticClueExplanationPart> = mutableListOf()
+
+                for (child in children) {
+                    if (child is CrypticWordplay) {
+                        for (part in childClueParts[wordplayChildrenCount]) {
+                            constructedList.add(part)
+                        }
+                        wordplayChildrenCount++
+                    }
+                    else if (revealOwnIndicator && child is CrypticIndicator<*>) {
+                        constructedList.add(CrypticClueExplanationPart.ExplanationIndicatorPart(
+                            child.clueText,
+                            ExplanationIndicatorType.JUXTAPOSITION
+                        ))
+                    }
+                    else {
+                        constructedList.add(CrypticClueExplanationPart.ExplanationIgnoredPart(child.clueText))
+                    }
+                }
+
+                return constructedList
+            }
+
+        }
+    }
 }
 
 /**

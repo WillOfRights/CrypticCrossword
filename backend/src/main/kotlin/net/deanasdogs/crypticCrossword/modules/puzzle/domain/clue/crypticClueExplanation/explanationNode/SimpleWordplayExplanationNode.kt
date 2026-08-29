@@ -14,18 +14,19 @@ abstract class SimpleWordplayExplanationNode(
 
     /**
      * Function which converts processed child clue parts into the total explanation part for this wordplay step. It is
-     * assumed that the i-th index of the `childClueParts` argument corresponds with the i-th index of `childNodes`. On
-     * `isOwnProcessStep` (this node itself is getting processed), we expect that most wordplay parts will simply
-     * show the indicator word and convert the whole node to the yielded string, so we can re-use this function for all
-     * three purposes:
+     * assumed that the i-th index of the `childClueParts` argument corresponds with the i-th index of `childNodes`. We
+     * expect that most wordplay parts do nothing when being processed than show the indicator word and convert the
+     * whole node to the yielded string, so we can re-use this function for all three purposes:
      *   * When processing the child nodes, we can pass the combination of "ignored" (from unprocessed nodes) and "as
      *   parts considered yielded" (from processed nodes) to get the full ExplanationParts for this step.
-     *   * When processing this node, we can reuse the function to get the `baseExplanationParts`.
-     *   * When doing the final revealed parts, we expect that
+     *   * When processing this node, we can reuse the function to get the `baseExplanationParts` when we pass all the
+     *   yielded nodes and `revealOwnIndicator` is true
+     *   * When doing the final revealed parts, we simply need to reveal its own indicator and pass the result of all
+     *   the revealed parts from the children.
      */
     abstract fun localConstructAsExplanationParts(
         childClueParts: List<List<CrypticClueExplanationPart>>,
-        isOwnProcessStep: Boolean,
+        revealOwnIndicator: Boolean,
         ): List<CrypticClueExplanationPart>
 
     override fun process(
@@ -34,6 +35,24 @@ abstract class SimpleWordplayExplanationNode(
     ) {
         // First, process the child nodes in order
         processChildren(addExplanationStep, constructAsExplanationParts)
+
+        // Then, get the base explanation parts and yielded explanation parts that explain this node
+        val baseExplanationParts = constructAsExplanationParts(
+            localConstructAsExplanationParts(
+                childNodes.map { it.getAsPartsConsideredYielded() },
+                true,
+            )
+        )
+        val yieldedExplanationParts = constructAsExplanationParts(
+            listOf(CrypticClueExplanationPart.ExplanationYieldedPart(yield, true))
+        )
+
+        // Then, add this as an explanation step to complete processing this node
+        addExplanationStep(CrypticClueExplanationStep(
+            baseExplanationParts.joinToString(""),
+            baseExplanationParts,
+            yieldedExplanationParts,
+        ))
     }
 
     override fun getAsIgnoredPart(): CrypticClueExplanationPart.ExplanationIgnoredPart {
@@ -45,7 +64,7 @@ abstract class SimpleWordplayExplanationNode(
     }
 
     override fun getAsFinalRevealedParts(): List<CrypticClueExplanationPart> {
-        TODO("Not yet implemented")
+        return localConstructAsExplanationParts(childNodes.map { it.getAsFinalRevealedParts() }, true)
     }
 
     /**
