@@ -8,7 +8,7 @@ import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
 import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue } from "../cluePanel/CluePanelTypes";
-import { CrypticClueExplanationBox, } from '../clueExplanation/ClueExplanation';
+import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
 import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
 
 /**
@@ -35,7 +35,7 @@ function InteractablePuzzle() {
             <div className={'explanation-box-container'}>
                 {
                     crypticClueExplanation !== undefined ?
-                        <CrypticClueExplanationBox crypticClueExplanation={crypticClueExplanation} />
+                        <ClueExplanationBox crypticClueExplanation={crypticClueExplanation} />
                         : null
                 }
             </div>
