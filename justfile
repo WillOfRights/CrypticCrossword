@@ -1,81 +1,75 @@
+set shell := ["bash", "-uc"]
+
 # Directories
-RUN_DIR:=absolute_path("./run")
-TARGET_DIR:=absolute_path("./backend/target")
-JS_BUILD_DIR:=absolute_path("./backend/src/main/resources/static/js/bundle")
+run_dir := absolute_path("./run")
+target_dir := absolute_path("./backend/target")
+js_build_dir := absolute_path("./backend/src/main/resources/static/js/bundle")
+socket_file := absolute_path("./run/socket.sock")
 
-# Run Files
-SOCKET_FILE:=absolute_path("./run/socket.sock")
+# Frontend build
+esbuild_script := absolute_path("./frontend/build/build.mjs")
 
-# Frontend build scripts
-ESBUILD_SCRIPT:=absolute_path("./frontend/build/build.mjs")
-ESWATCH_SCRIPT:=absolute_path("./frontend/build/watch.mjs")
-LINT_FRONTEND:="cd frontend && npx eslint ."
+default:
+    @just --list
 
-# Spring and backend build scripts/goals
-SPRING_RUN:="cd backend && ./mvnw spring-boot:run"
-WATCH_RESOURCES:="cd backend && watchexec -w src/main/resources/static/js/bundle --postpone -d 1s -e mustache,js,css './mvnw resources:resources'"
-WATCH_BACKEND_SRC:= "cd backend && watchexec -w src/main/kotlin --postpone -d 1s -e kt './mvnw compile'"
-FORMAT_BACKEND:="cd backend && ./mvnw spotless:apply"
-LINT_BACKEND:="cd backend && ./mvnw spotbugs:check"
-DEBUG_SUFFIX_BACKEND:="-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"
-
-# Frontend build constants
-PROD_FRONTEND_MODE:= "production"
-DEV_FRONTEND_MODE:= "development"
+# --- Server lifecycle ---
 
 run: stop (frontend-build "production")
-  @echo "Starting local server"
-  @overmind start -D -s {{SOCKET_FILE}} -l spring_boot
-  @echo "Local server started"
+    @echo "Starting local server"
+    overmind start -D -s {{socket_file}} -l spring_boot
+    @echo "Local server started"
 
 run-dev: stop (frontend-build "development")
-  @echo "Starting local server and file watchers for development"
-  @overmind start -D -s {{SOCKET_FILE}} --any-can-die -x spring_boot_debug
-  @echo "Local server started"
-
-connect:
-  @overmind c -s {{SOCKET_FILE}}
+    @echo "Starting local server and file watchers for development"
+    overmind start -D -s {{socket_file}} --any-can-die -x spring_boot_debug
+    @echo "Local server started"
 
 debug: stop (frontend-build "production")
-  @echo "Starting local run and listening for debugger on port 5005"
-  @overmind start -D -s {{SOCKET_FILE}} -l spring_boot_debug
-  @echo "Local server started"
+    @echo "Starting local server, listening for debugger on port 5005"
+    overmind start -D -s {{socket_file}} -l spring_boot_debug
+    @echo "Local server started"
 
-stop: validate-directories
-  @if [ -S '{{SOCKET_FILE}}' ]; then \
-    echo "Stopping local server"; \
-    overmind quit -s {{SOCKET_FILE}}; \
-    while [ -S '{{SOCKET_FILE}}' ]; do sleep 0.1; done; \
-    echo "Processes stopped."; \
-  else \
-    echo "No socket file found. Nothing to stop."; \
-  fi
+connect:
+    overmind c -s {{socket_file}}
 
+stop: _ensure-run-dir
+    #!/usr/bin/env bash
+    if [ -S '{{socket_file}}' ]; then
+        echo "Stopping local server"
+        overmind quit -s {{socket_file}}
+        while [ -S '{{socket_file}}' ]; do sleep 0.1; done
+        echo "Processes stopped."
+    else
+        echo "No socket file found. Nothing to stop."
+    fi
 
-frontend-build dev_mode=PROD_FRONTEND_MODE: validate-directories
-  @echo "Compiling frontend"
-  @if [ {{dev_mode}} = {{DEV_FRONTEND_MODE}} ]; then \
-    cd frontend/build && node '{{ESBUILD_SCRIPT}}' {{DEV_FRONTEND_MODE}}; \
-  else \
-    cd frontend/build && node '{{ESBUILD_SCRIPT}}' {{PROD_FRONTEND_MODE}}; \
-  fi
-  @echo "Compiled frontend"
+# --- Frontend ---
 
-validate-directories:
-  @mkdir -p '{{RUN_DIR}}'
+frontend-build mode="production": _ensure-run-dir
+    @echo "Compiling frontend ({{mode}})"
+    cd frontend/build && node '{{esbuild_script}}' {{mode}}
+    @echo "Compiled frontend"
+
+# --- Quality ---
 
 format:
-  @echo "Formatting backend"
-  @{{FORMAT_BACKEND}}
+    @echo "Formatting backend"
+    cd backend && ./mvnw spotless:apply
 
 lint:
-  @echo "Linting frontend"
-  @{{LINT_FRONTEND}}
-  @{{LINT_BACKEND}}
+    @echo "Linting frontend"
+    cd frontend && npx eslint .
+    @echo "Linting backend"
+    cd backend && ./mvnw spotbugs:check
+
+# --- Housekeeping ---
+
+_ensure-run-dir:
+    @mkdir -p '{{run_dir}}'
 
 clean:
-  @echo "Cleaning target and run directories"
-  @rm -rf '{{TARGET_DIR}}'
-  @rm -rf '{{RUN_DIR}}'
-  @rm -rf '{{JS_BUILD_DIR}}'
-  @echo "Directories cleaned"
+    @echo "Cleaning target and run directories"
+    rm -rf '{{target_dir}}'
+    rm -rf '{{run_dir}}'
+    rm -rf '{{js_build_dir}}'
+    @echo "Directories cleaned"

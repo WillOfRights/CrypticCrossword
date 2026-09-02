@@ -12,42 +12,45 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueStr
  */
 @Serializable
 @SerialName("doubleDefinition")
-data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
-    : BaseCrypticCluePart(), ParentCluePart
-{
-
+data class CrypticDoubleDefinition(
+    override val children: List<CrypticCluePart>,
+) : BaseCrypticCluePart(),
+    ParentCluePart {
     init {
         // Validate that the children match the predicate we expect.
         validateChildClueParts {
-            it is CrypticDefinition
-                    || it is CrypticNonIndicatorText
-                    || it is CrypticLinkWord
+            it is CrypticDefinition ||
+                it is CrypticNonIndicatorText ||
+                it is CrypticLinkWord
         }
     }
+
     // Clue text is default clue text from joining children
     override val clueText: String = defaultClueText
 
     /**
      * Primary definition of this double definition.
      */
-    private val primaryDefinition: CrypticDefinition = ParentCluePart.Companion.getOnlyChild(children) {
-        it is CrypticDefinition && it.isPrimaryDefinition
-    }
-
+    private val primaryDefinition: CrypticDefinition =
+        ParentCluePart.Companion.getOnlyChild(children) {
+            it is CrypticDefinition && it.isPrimaryDefinition
+        }
 
     /**
      * Secondary definition of this double definition.
      */
-    private val secondaryDefinition: CrypticDefinition = ParentCluePart.Companion.getOnlyChild(children) {
+    private val secondaryDefinition: CrypticDefinition =
+        ParentCluePart.Companion.getOnlyChild(children) {
             it is CrypticDefinition && !it.isPrimaryDefinition
-    }
+        }
 
     /**
      * Optional link word(s) between definition and wordplay.
      */
-    private val linkWord: CrypticLinkWord? = ParentCluePart.Companion.getOptionalChild(children) {
-        it is CrypticLinkWord
-    }
+    private val linkWord: CrypticLinkWord? =
+        ParentCluePart.Companion.getOptionalChild(children) {
+            it is CrypticLinkWord
+        }
 
     init {
         require(primaryDefinition.yield == secondaryDefinition.yield) {
@@ -58,37 +61,48 @@ data class CrypticDoubleDefinition(override val children: List<CrypticCluePart>)
     override val yield: String = primaryDefinition.yield
 
     override fun getCrypticClueStructure(): CrypticClueStructure {
-        val primaryDefinitionStep = CrypticClueStructurePart.DefinitionStep(children.map {
-            if (it is CrypticDefinition && it.isPrimaryDefinition)
-                it
-            else
-                IgnoredCluePart(it)
-        })
+        val primaryDefinitionStep =
+            CrypticClueStructurePart.DefinitionStep(
+                children.map {
+                    if (it is CrypticDefinition && it.isPrimaryDefinition) {
+                        it
+                    } else {
+                        IgnoredCluePart(it)
+                    }
+                },
+            )
 
-        val linkWordStep = linkWord?.let {
-            CrypticClueStructurePart.DefinitionStep(children.map {
-                it as? CrypticLinkWord ?: IgnoredCluePart(it)
-            })
-        }
+        val linkWordStep =
+            linkWord?.let {
+                CrypticClueStructurePart.DefinitionStep(
+                    children.map {
+                        it as? CrypticLinkWord ?: IgnoredCluePart(it)
+                    },
+                )
+            }
 
-        val secondaryDefinitionStep = CrypticClueStructurePart.DefinitionStep(children.map {
-            if (it is CrypticDefinition && !it.isPrimaryDefinition)
-                it
-            else
-                IgnoredCluePart(it)
-        })
+        val secondaryDefinitionStep =
+            CrypticClueStructurePart.DefinitionStep(
+                children.map {
+                    if (it is CrypticDefinition && !it.isPrimaryDefinition) {
+                        it
+                    } else {
+                        IgnoredCluePart(it)
+                    }
+                },
+            )
 
         return CrypticClueStructure(
             listOfNotNull(
                 primaryDefinitionStep,
                 linkWordStep,
                 secondaryDefinitionStep,
-            )
+            ),
         )
     }
 
     override fun getExplanation(): CrypticClueExplanation {
-
+        TODO("Unimplemented")
     }
-
 }
+
