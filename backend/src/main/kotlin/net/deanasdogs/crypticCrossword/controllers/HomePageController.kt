@@ -1,4 +1,4 @@
-package net.deanasdogs.crypticCrossword.controllers.homepage
+package net.deanasdogs.crypticCrossword.controllers
 
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model

@@ -2,20 +2,51 @@ import './InteractablePuzzle.scss';
 import * as React from 'react';
 import * as z from 'zod';
 
-const { useState, } = React;
+const { useRef, useEffect, useState, } = React;
 
-import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
-import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
+import CrosswordGrid from "../crosswordGrid/CrosswordGrid";
+import { PuzzleSquare, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue } from "../cluePanel/CluePanelTypes";
 import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
 import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
 
+import { getHighlightablePuzzleSquares, getSquareCluesArray, getSolvableCluePanelClues, getHighlightableCluePanelClues, } from "./InteractablePuzzleUtils";
+import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
+import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
+import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
+import { useInteractablePuzzleSolving } from "./InteractablePuzzleSolving";
+import { useSocket } from "../../connections/webSocket/WebSocketProvider";
+
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
  */
 function InteractablePuzzle() {
-    const { puzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
+    const { initialPuzzleSquares, acrossCluePanelClues, downCluePanelClues, } = fakeData();
+
+    const ref = useRef<HTMLDivElement>(null);
+    const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquare[][]>(initialPuzzleSquares);
+    const websocket = useSocket();
+    websocket.send('DOWN');
+    websocket.send('ACROSS');
+
+    const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares, acrossCluePanelClues, downCluePanelClues);
+    const { acrossSolvableClues, downSolvableClues } = getSolvableCluePanelClues(acrossCluePanelClues, downCluePanelClues, puzzleSquareWithCluesArray);
+
+    const { focus, navigationActions, } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
+    const { solvingActions, } = useInteractablePuzzleSolving(puzzleSquareWithCluesArray, setPuzzleSquares, focus);
+    const keyboardActions = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus, puzzleSquareWithCluesArray);
+    const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, } = keyboardActions;
+    const mouseActions = useInteractablePuzzleMouse(navigationActions, focus);
+
+    // Autofocus interactable puzzle on page load
+    useEffect(() => {
+        ref.current?.focus();
+    }, []);
+
+    const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
+    const { acrossHighlightableClues, downHighlightableClues, } = getHighlightableCluePanelClues(acrossSolvableClues, downSolvableClues, focus);
+
     const [crypticClueExplanation, setCrypticClueExplanation] = useState<CrypticClueExplanationType | undefined>(undefined);
 
     fetch('/explain').then(value => {
@@ -25,12 +56,19 @@ function InteractablePuzzle() {
     });
 
     return (
-        <div className={'interactable-puzzle'}>
+        <div
+            className={'interactable-puzzle'}
+            ref={ref}
+            tabIndex={0}
+            onKeyDown={onKeyDown}
+            onFocus={onFocusInteractivePuzzle}
+            onBlur={onBlurInteractivePuzzle}
+        >
             <div className={'grid-container'}>
-                <CrosswordGrid puzzleSquares={puzzleSquares} />
+                <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} mouseActions={mouseActions} />
             </div>
             <div className={'clue-panel-container'}>
-                <CluePanel acrossCluePanelClues={acrossCluePanelClues} downCluePanelClues={downCluePanelClues} />
+                <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} keyboardActions={keyboardActions} />
             </div>
             <div className={'explanation-box-container'}>
                 {
@@ -47,30 +85,60 @@ function InteractablePuzzle() {
  * Get fake data for testing, delete this later.
  */
 function fakeData() {
-    const puzzleSquares: PuzzleSquare[][] = [
-        [SquareType.BLOCK, { squareType: SquareType.FILLABLE, fill: 'C' }],
-        [{ squareType: SquareType.FILLABLE, fill: 'R' }, SquareType.BLOCK],
+    const initialPuzzleSquares: PuzzleSquare[][] = [
+        [
+            { squareType: SquareType.FILLABLE, fill: '', number: 1 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            { squareType: SquareType.FILLABLE, fill: '', number: 2 },
+            SquareType.BLOCK,
+            { squareType: SquareType.FILLABLE, fill: '', number: 3 },
+        ],
+        [
+            { squareType: SquareType.FILLABLE, fill: '', },
+            SquareType.BLOCK,
+            { squareType: SquareType.FILLABLE, fill: '', number: 4 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            { squareType: SquareType.FILLABLE, fill: '', },
+        ],
+        [
+            { squareType: SquareType.FILLABLE, fill: '', number: 5 },
+            { squareType: SquareType.FILLABLE, fill: '', number: 6 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            SquareType.BLOCK,
+            SquareType.BLOCK,
+        ],
+        [
+            SquareType.BLOCK,
+            { squareType: SquareType.FILLABLE, fill: '', },
+            SquareType.BLOCK,
+            { squareType: SquareType.FILLABLE, fill: '', number: 7 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+        ],
+        [
+            { squareType: SquareType.FILLABLE, fill: '', number: 8 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            SquareType.BLOCK,
+            SquareType.BLOCK,
+        ],
     ];
+
     const acrossCluePanelClues: CluePanelClue[] = [
-        { clueText: 'What is H', number: 1, isAnswered: false },
-        { clueText: 'What is H', number: 2, isAnswered: false },
-        { clueText: 'What is H', number: 3, isAnswered: false },
-        { clueText: 'What is H', number: 6, isAnswered: false },
-        { clueText: 'What is H', number: 7, isAnswered: false },
-        { clueText: 'What is H', number: 8, isAnswered: false },
-        { clueText: 'What is H', number: 9, isAnswered: false },
+        { clueText: 'DOG', number: 1, },
+        { clueText: 'OWE', number: 4, },
+        { clueText: 'MID', number: 5, },
+        { clueText: 'IS', number: 7, },
+        { clueText: 'ACE', number: 8, },
     ];
+
     const downCluePanelClues: CluePanelClue[] = [
-        { clueText: 'What is V', number: 1, isAnswered: false },
-        { clueText: 'What is V', number: 2, isAnswered: false },
-        { clueText: 'What is V', number: 3, isAnswered: false },
-        { clueText: 'What is V', number: 6, isAnswered: false },
-        { clueText: 'What is V', number: 7, isAnswered: false },
-        { clueText: 'What is V', number: 8, isAnswered: false },
-        { clueText: 'What is V', number: 9, isAnswered: false },
+        { clueText: 'DIM', number: 1, },
+        { clueText: 'GOD', number: 2, },
+        { clueText: 'ME', number: 3, },
+        { clueText: 'INC', number: 6, },
     ];
     return {
-        puzzleSquares,
+        initialPuzzleSquares,
         acrossCluePanelClues,
         downCluePanelClues,
     };
