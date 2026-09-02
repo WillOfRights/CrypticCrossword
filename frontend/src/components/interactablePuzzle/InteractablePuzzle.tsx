@@ -3,8 +3,8 @@ import * as React from 'react';
 
 const { useRef, useEffect, useState, } = React;
 
-import CrosswordGrid from '../crosswordGrid/CrosswordGrid';
-import { PuzzleSquare, SquareType } from "../crosswordGrid/CrosswordGridTypes";
+import CrosswordGrid from "../crosswordGrid/CrosswordGrid";
+import { PuzzleSquare, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue } from "../cluePanel/CluePanelTypes";
 
@@ -13,7 +13,7 @@ import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation"
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
 import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
 import { useInteractablePuzzleSolving } from "./InteractablePuzzleSolving";
-import {useSocket} from "../../connections/webSocket/WebSocketProvider";
+import { useSocket } from "../../connections/webSocket/WebSocketProvider";
 
 /**
  * An interactable puzzle on the site, including a grid, clues, and hint section.
@@ -45,12 +45,14 @@ function InteractablePuzzle() {
     const { acrossHighlightableClues, downHighlightableClues, } = getHighlightableCluePanelClues(acrossSolvableClues, downSolvableClues, focus);
 
     return (
-        <div className={'interactable-puzzle'}
+        <div
+            className={'interactable-puzzle'}
             ref={ref}
             tabIndex={0}
             onKeyDown={onKeyDown}
             onFocus={onFocusInteractivePuzzle}
-            onBlur={onBlurInteractivePuzzle} >
+            onBlur={onBlurInteractivePuzzle}
+        >
             <div className={'grid-container'}>
                 <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} mouseActions={mouseActions} />
             </div>
