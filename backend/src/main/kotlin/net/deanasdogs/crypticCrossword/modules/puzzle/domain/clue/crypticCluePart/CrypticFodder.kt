@@ -3,6 +3,7 @@ package net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticCluePa
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExplanation.CrypticClueExplanationPart
+import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExplanation.CrypticClueExplanationStep
 import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExplanation.explanationNode.SimpleWordplayExplanationNode
 import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExplanation.explanationNode.WordplayExplanationNode
 
@@ -11,21 +12,26 @@ import net.deanasdogs.crypticCrossword.modules.puzzle.domain.clue.crypticClueExp
  * This can be an abbreviation or a straight definition (such as part of a charades clue).
  */
 @Serializable
-@SerialName("crypticSynonym")
-data class CrypticSynonym(
+@SerialName("crypticFodder")
+data class CrypticFodder(
     override val clueText: String,
     override val yield: String,
     val isAbbreviation: Boolean = false,
 ) : CrypticWordplay() {
     override fun getWordplayExplanationNode(): WordplayExplanationNode =
-        object : SimpleWordplayExplanationNode(
-            clueText,
-            listOf(),
-            yield,
-        ) {
-            override fun localConstructAsExplanationParts(
-                childClueParts: List<List<CrypticClueExplanationPart>>,
-                revealOwnIndicator: Boolean,
-            ): List<CrypticClueExplanationPart> = listOf(CrypticClueExplanationPart.ExplanationIgnoredPart(clueText))
+        object : WordplayExplanationNode() {
+            override fun process(
+                addExplanationStep: (CrypticClueExplanationStep) -> Unit,
+                constructAsExplanationParts: (List<CrypticClueExplanationPart>) -> List<CrypticClueExplanationPart>,
+            ) {}
+
+            override fun getAsIgnoredPart(): CrypticClueExplanationPart.ExplanationIgnoredPart =
+                CrypticClueExplanationPart.ExplanationIgnoredPart(clueText)
+
+            override fun getAsYieldedPart(): CrypticClueExplanationPart.ExplanationYieldedPart =
+                CrypticClueExplanationPart.ExplanationYieldedPart(yield)
+
+            override fun getAsFinalRevealedParts(): List<CrypticClueExplanationPart> =
+                listOf(CrypticClueExplanationPart.ExplanationFodderPart(clueText))
         }
 }

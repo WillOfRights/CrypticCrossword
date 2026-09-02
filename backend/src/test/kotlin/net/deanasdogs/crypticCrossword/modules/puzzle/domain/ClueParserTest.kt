@@ -35,28 +35,33 @@ class ClueParserTest(
         answer: String,
         baseCrypticClueJson: String,
         baseCrypticCluePart: BaseCrypticCluePart,
+        explanationLength: Int,
     ) {
         val parsedClueResult = clueParser.parseCrypticClue(clueText, answer, baseCrypticClueJson)
 
         Assertions.assertFalse(parsedClueResult is ParseResult.Failure)
-        {
-            formatParseErrors(
-                testCaseName,
-                clueText,
-                answer,
-                baseCrypticClueJson,
-                (parsedClueResult as ParseResult.Failure).errors,
-            )
-        }
+            {
+                formatParseErrors(
+                    testCaseName,
+                    clueText,
+                    answer,
+                    baseCrypticClueJson,
+                    (parsedClueResult as ParseResult.Failure).errors,
+                )
+            }
 
         val parsedClue = (parsedClueResult as ParseResult.Success).value
         // Trivial checks
-        Assertions.assertEquals(parsedClue.clueText, clueText)
-        Assertions.assertEquals(parsedClue.answer, answer)
+        Assertions.assertEquals(clueText, parsedClue.clueText)
+        Assertions.assertEquals(answer, parsedClue.answer)
 
-        // Substantive check
-        Assertions.assertEquals(parsedClue.baseCrypticCluePart, baseCrypticCluePart)
-        { "DTO parsed did not match what was expected by test case." }
+        // Substantive check for parsing logic
+        Assertions.assertEquals(baseCrypticCluePart, parsedClue.baseCrypticCluePart)
+            { "DTO parsed did not match what was expected by test case." }
+
+        // Verify that we can parse into an explanation of the expected length
+        val explanation = parsedClue.baseCrypticCluePart.getExplanation()
+        Assertions.assertEquals(explanationLength, explanation.explanationSteps.size)
     }
 
     companion object {
@@ -83,8 +88,8 @@ class ClueParserTest(
                                 CrypticDefinition("def2", "FOO", isPrimaryDefinition = false),
                             ),
                     ),
+                    1,
                 ),
-
                 // Double definition with link word
                 Arguments.of(
                     "Double definition with link word",
@@ -109,12 +114,12 @@ class ClueParserTest(
                                 CrypticDefinition("def2", "FOO", isPrimaryDefinition = false),
                             ),
                     ),
+                    1,
                 ),
-
                 // Cryptic juxtaposition without indicator
                 Arguments.of(
                     "Cryptic juxtaposition",
-                    "Def1 foo bar",
+                    "Def1 placeholder test",
                     "FOOBAR",
                     """{"type": "definitionAndWordplay", "children":
                         |[
@@ -122,9 +127,9 @@ class ClueParserTest(
                             |{"type": "nonIndicatorText", "clueText": " "},
                             |{"type": "crypticJuxtaposition", "children":
                                 |[
-                                    |{"type": "crypticSynonym", "clueText": "foo", "yield": "FOO" },
+                                    |{"type": "crypticSynonym", "clueText": "placeholder", "yield": "FOO" },
                                     |{"type": "nonIndicatorText", "clueText": " "},
-                                    |{"type": "crypticSynonym", "clueText": "bar", "yield": "BAR" }
+                                    |{"type": "crypticSynonym", "clueText": "test", "yield": "BAR" }
                             |]}
                         |]}
                     """.trimMargin(),
@@ -133,19 +138,21 @@ class ClueParserTest(
                             listOf(
                                 CrypticDefinition("Def1", "FOOBAR"),
                                 CrypticNonIndicatorText(" "),
-                                CrypticJuxtaposition(listOf(
-                                    CrypticSynonym("foo", "FOO"),
-                                    CrypticNonIndicatorText(" "),
-                                    CrypticSynonym("bar", "BAR"),
-                                )),
+                                CrypticJuxtaposition(
+                                    listOf(
+                                        CrypticSynonym("placeholder", "FOO"),
+                                        CrypticNonIndicatorText(" "),
+                                        CrypticSynonym("test", "BAR"),
+                                    ),
+                                ),
                             ),
                     ),
+                    4, // TODO: Make this 3 when non-indicator juxtapositions do not require a step
                 ),
-
                 // Cryptic juxtaposition with indicator
                 Arguments.of(
                     "Cryptic juxtaposition with indicator",
-                    "Def1 foo after bar",
+                    "Def1 placeholder after test",
                     "BARFOO",
                     """{"type": "definitionAndWordplay", "children":
                         |[
@@ -153,11 +160,11 @@ class ClueParserTest(
                             |{"type": "nonIndicatorText", "clueText": " "},
                             |{"type": "crypticJuxtaposition", "children":
                                 |[
-                                    |{"type": "crypticSynonym", "clueText": "foo", "yield": "FOO" },
+                                    |{"type": "crypticSynonym", "clueText": "placeholder", "yield": "FOO" },
                                     |{"type": "nonIndicatorText", "clueText": " "},
                                     |{"type": "crypticJuxtapositionIndicator", "clueText": "after", "isBefore": "false"},
                                     |{"type": "nonIndicatorText", "clueText": " "},
-                                    |{"type": "crypticSynonym", "clueText": "bar", "yield": "BAR" }
+                                    |{"type": "crypticSynonym", "clueText": "test", "yield": "BAR" }
                             |]}
                         |]}
                     """.trimMargin(),
@@ -166,15 +173,18 @@ class ClueParserTest(
                             listOf(
                                 CrypticDefinition("Def1", "BARFOO"),
                                 CrypticNonIndicatorText(" "),
-                                CrypticJuxtaposition(listOf(
-                                    CrypticSynonym("foo", "FOO"),
-                                    CrypticNonIndicatorText(" "),
-                                    CrypticJuxtapositionIndicator("after", false),
-                                    CrypticNonIndicatorText(" "),
-                                    CrypticSynonym("bar", "BAR"),
-                                )),
+                                CrypticJuxtaposition(
+                                    listOf(
+                                        CrypticSynonym("placeholder", "FOO"),
+                                        CrypticNonIndicatorText(" "),
+                                        CrypticJuxtapositionIndicator("after", false),
+                                        CrypticNonIndicatorText(" "),
+                                        CrypticSynonym("test", "BAR"),
+                                    ),
+                                ),
                             ),
                     ),
+                    4,
                 ),
             )
 

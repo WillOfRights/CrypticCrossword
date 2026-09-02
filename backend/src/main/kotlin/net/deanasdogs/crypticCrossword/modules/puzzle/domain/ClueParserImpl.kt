@@ -24,6 +24,11 @@ class ClueParserImpl : ClueParser {
                 ClueParseError("Clue text derived from cryptic clue parts must match serialized clueText"),
             )
         }
+        if (answer != baseCrypticCluePart.yield) {
+            errors.add(
+                ClueParseError("Answer derived from cryptic clue parts must match serialized answer"),
+            )
+        }
 
         if (!errors.isEmpty()) {
             return ParseResult.Failure(errors)

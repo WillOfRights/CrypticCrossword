@@ -1,9 +1,14 @@
 .interactable-puzzle {
   width: fit-content;
   display: flex;
+  flex-wrap: wrap;
   padding: 10px;
 
   .grid-container {
     padding-right: 10px;
+  }
+
+  .explanation-box-container {
+    width: 100%;
   }
 }

@@ -1,5 +1,6 @@
 import './InteractablePuzzle.scss';
 import * as React from 'react';
+import * as z from 'zod';
 
 const { useRef, useEffect, useState, } = React;
 
@@ -7,6 +8,8 @@ import CrosswordGrid from "../crosswordGrid/CrosswordGrid";
 import { PuzzleSquare, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue } from "../cluePanel/CluePanelTypes";
+import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
+import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
 
 import { getHighlightablePuzzleSquares, getSquareCluesArray, getSolvableCluePanelClues, getHighlightableCluePanelClues, } from "./InteractablePuzzleUtils";
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
@@ -44,6 +47,14 @@ function InteractablePuzzle() {
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
     const { acrossHighlightableClues, downHighlightableClues, } = getHighlightableCluePanelClues(acrossSolvableClues, downSolvableClues, focus);
 
+    const [crypticClueExplanation, setCrypticClueExplanation] = useState<CrypticClueExplanationType | undefined>(undefined);
+
+    fetch('/explain').then(value => {
+        value.json().then(
+            res => setCrypticClueExplanation(z.parse(CrypticClueExplanation, res))
+        );
+    });
+
     return (
         <div
             className={'interactable-puzzle'}
@@ -58,6 +69,13 @@ function InteractablePuzzle() {
             </div>
             <div className={'clue-panel-container'}>
                 <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} keyboardActions={keyboardActions} />
+            </div>
+            <div className={'explanation-box-container'}>
+                {
+                    crypticClueExplanation !== undefined ?
+                        <ClueExplanationBox crypticClueExplanation={crypticClueExplanation} />
+                        : null
+                }
             </div>
         </div>
     );
