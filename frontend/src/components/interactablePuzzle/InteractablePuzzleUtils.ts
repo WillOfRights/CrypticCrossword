@@ -173,6 +173,16 @@ export function getClueGuesses(
 }
 
 /**
+ * Attach each clue's solution state, as derived by `getClueGuesses`, to the clue panel clue itself.
+ */
+export function toSolvableCluePanelClues(cluePanelClues: CluePanelClue[], clueGuesses: ClueGuesses): SolvableCluePanelClue[] {
+  return cluePanelClues.map(clue => ({
+    ...clue,
+    solutionState: clueGuesses.get(clue.number)?.solutionState ?? CluePanelSolutionState.NOT_COMPLETED,
+  }));
+}
+
+/**
  * Get the clue panel clues with information about whether they are highlighted.
  */
 export function getHighlightableCluePanelClues(

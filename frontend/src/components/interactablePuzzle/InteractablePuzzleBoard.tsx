@@ -7,11 +7,11 @@ const { useRef, useEffect, useState, } = React;
 import CrosswordGrid from "../crosswordGrid/CrosswordGrid";
 import { PuzzleSquare, ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
-import { CluePanelClue, CluePanelSolutionState, SolvableCluePanelClue, } from "../cluePanel/CluePanelTypes";
+import { CluePanelClue, } from "../cluePanel/CluePanelTypes";
 import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
 import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
 
-import { getHighlightablePuzzleSquares, getSquareCluesArray, getClueGuesses, getHighlightableCluePanelClues, } from "./InteractablePuzzleUtils";
+import { getHighlightablePuzzleSquares, getSquareCluesArray, getClueGuesses, getHighlightableCluePanelClues, toSolvableCluePanelClues, } from "./InteractablePuzzleUtils";
 import { ClueGuesses, ClueSolutionStates, CluesByDirection, } from "./InteractablePuzzleTypes";
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
@@ -47,8 +47,8 @@ function InteractablePuzzleBoard({
     const { acrossClueGuesses, downClueGuesses } = getClueGuesses(
         acrossCluePanelClues, downCluePanelClues, puzzleSquareWithCluesArray, acrossClueStates, downClueStates,
     );
-    const acrossSolvableClues = _toSolvableCluePanelClues(acrossCluePanelClues, acrossClueGuesses);
-    const downSolvableClues = _toSolvableCluePanelClues(downCluePanelClues, downClueGuesses);
+    const acrossSolvableClues = toSolvableCluePanelClues(acrossCluePanelClues, acrossClueGuesses);
+    const downSolvableClues = toSolvableCluePanelClues(downCluePanelClues, downClueGuesses);
 
     useEffect(() => {
         _reportChangedGuesses(ClueDirection.ACROSS, acrossClueGuesses, previousGuessesRef.current.across, onClueGuessChanged);
@@ -69,8 +69,8 @@ function InteractablePuzzleBoard({
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
     const { acrossHighlightableClues, downHighlightableClues, } = getHighlightableCluePanelClues(acrossSolvableClues, downSolvableClues, focus);
 
-    const [crypticClueExplanation, setCrypticClueExplanation] = useState<CrypticClueExplanationType | undefined>(undefined);
-
+    // const [crypticClueExplanation, setCrypticClueExplanation] = useState<CrypticClueExplanationType | undefined>(undefined);
+    //
     // fetch('/explain').then(value => {
     //     value.json().then(
     //         res => setCrypticClueExplanation(z.parse(CrypticClueExplanation, res))
@@ -93,21 +93,14 @@ function InteractablePuzzleBoard({
                 <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} keyboardActions={keyboardActions} />
             </div>
             <div className={'explanation-box-container'}>
-                {
-                    crypticClueExplanation !== undefined ?
-                        <ClueExplanationBox crypticClueExplanation={crypticClueExplanation} />
-                        : null
-                }
+                {/*{*/}
+                {/*    crypticClueExplanation !== undefined ?*/}
+                {/*        <ClueExplanationBox crypticClueExplanation={crypticClueExplanation} />*/}
+                {/*        : null*/}
+                {/*}*/}
             </div>
         </div>
     );
-}
-
-function _toSolvableCluePanelClues(cluePanelClues: CluePanelClue[], clueGuesses: ClueGuesses): SolvableCluePanelClue[] {
-    return cluePanelClues.map(clue => ({
-        ...clue,
-        solutionState: clueGuesses.get(clue.number)?.solutionState ?? CluePanelSolutionState.NOT_COMPLETED,
-    }));
 }
 
 /**
