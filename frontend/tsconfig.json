@@ -1,0 +1,37 @@
+{
+  // NOTE: esbuild (build/esbuild.config.mjs) strips types without type-checking and does not
+  // use this file to decide build output, EXCEPT for the fields marked "esbuild reads this"
+  // below - it auto-discovers tsconfig.json relative to the input files. Everything else here
+  // is for IntelliJ/tsc only: editor inspections, in-editor type hints, and language-level
+  // warnings (e.g. IntelliJ flagging `Set` without knowing this project assumes ES2020+).
+  "compilerOptions": {
+    // IDE/tsc-only: esbuild has its own independent `target` build option (currently unset,
+    // meaning "don't downlevel, keep syntax as authored"). It does NOT read this field. If the
+    // bundle output ever needs to target older browsers, that's a `target` added to
+    // createBuildContext in esbuild.config.mjs, not a change here.
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+
+    // IDE/tsc-only: esbuild always does its own bundler-native resolution regardless of these.
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    // esbuild reads this: matches the classic `React.createElement` transform esbuild already
+    // defaults to, which is what every file's manual `import * as React from 'react'` assumes.
+    // Changing this to "react-jsx" would change esbuild's actual output, not just IDE hints -
+    // keep it in sync with the React import style if either ever changes.
+    "jsx": "react",
+
+    "esModuleInterop": true,
+
+    // Per-file transform safety net: esbuild (like Babel/swc) type-checks nothing and
+    // transforms one file at a time, so it can't always tell a re-exported name is type-only.
+    // isolatedModules makes tsc flag anything that depends on cross-file type information,
+    // catching the case before esbuild would need to guess.
+    "isolatedModules": true,
+
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}
