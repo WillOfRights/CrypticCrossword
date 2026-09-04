@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-const {createContext, useContext, useState} = React;
+const {createContext, useContext, useState, useRef, useCallback} = React;
 import type {ReactNode} from 'react';
 
-import {WebSocketStatus} from "./WebSocketTypes";
+import {WebSocketContextValue, WebSocketStatus, MessageListener} from "./WebSocketTypes";
 import {useWebSocket} from "./WebSocket";
 
 interface WebSocketProviderProps {
@@ -11,14 +11,28 @@ interface WebSocketProviderProps {
     children: ReactNode,
 }
 
-const WebSocketContext = createContext(null);
+const WebSocketContext = createContext<WebSocketContextValue | null>(null);
 
+/**
+ * Provides a single shared websocket connection to the whole app.
+ */
 function WebSocketProvider({url, children}: WebSocketProviderProps) {
     const [status, setStatus] = useState<WebSocketStatus>(WebSocketStatus.CONNECTING);
+    const listenersRef = useRef<Set<MessageListener>>(new Set());
+
+    const subscribe = useCallback((listener: MessageListener) => {
+        listenersRef.current.add(listener);
+        return () => {
+            listenersRef.current.delete(listener);
+        };
+    }, []);
+
     const ws = useWebSocket({
         url,
         options: {
-            onMessage: (data: any) => {console.log(data)},
+            onMessage: (data: unknown) => {
+                listenersRef.current.forEach((listener) => listener(data));
+            },
             onOpen: () => {setStatus(WebSocketStatus.CONNECTED)},
             onClose: () => {setStatus(WebSocketStatus.DISCONNECTED)},
             reconnect: true,
@@ -26,7 +40,7 @@ function WebSocketProvider({url, children}: WebSocketProviderProps) {
     });
 
     return (
-        <WebSocketContext.Provider value={{ ...ws, status }}>
+        <WebSocketContext.Provider value={{ send: ws.send, status, subscribe }}>
             {children}
         </WebSocketContext.Provider>
     );
