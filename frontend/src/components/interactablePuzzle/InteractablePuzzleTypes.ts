@@ -1,4 +1,5 @@
 import { ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
+import { CluePanelSolutionState, } from "../cluePanel/CluePanelTypes";
 
 enum InteractablePuzzleUnfocused {
   NOT_FOCUSED,
@@ -44,6 +45,27 @@ enum ForwardsOrBackwards {
   BACKWARDS,
 }
 
+/**
+ * Map from clue number to its current server-verified solution state. The board has no notion of
+ * correctness beyond this - it's commanded entirely by the server connection.
+ */
+type ClueSolutionStates = Map<number, CluePanelSolutionState>;
+
+/**
+ * A clue's current guess and completeness, as derived from the board, together with its solution
+ * state, as commanded by the server connection.
+ */
+type ClueGuess = {
+  guess: string,
+  isComplete: boolean,
+  solutionState: CluePanelSolutionState,
+}
+
+/**
+ * Map from clue number to its current `ClueGuess`.
+ */
+type ClueGuesses = Map<number, ClueGuess>;
+
 export {
   InteractablePuzzleUnfocused,
   InteractablePuzzleFocusedState,
@@ -52,5 +74,8 @@ export {
   InteractablePuzzleFocus,
   NavigationDirection,
   ForwardsOrBackwards,
+  ClueSolutionStates,
+  ClueGuess,
+  ClueGuesses,
 }
 

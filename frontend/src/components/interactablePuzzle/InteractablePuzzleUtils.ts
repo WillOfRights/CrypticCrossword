@@ -1,6 +1,6 @@
 import { CluePanelClue, CluePanelSolutionState, SolvableCluePanelClue, HighlightableCluePanelClue } from "../cluePanel/CluePanelTypes";
 import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight, LetterSquareWithClues, LetterSquareWithCluesAndIdxes } from "../crosswordGrid/CrosswordGridTypes";
-import { InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
+import { ClueGuesses, ClueSolutionStates, InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 
 /**
  * Get the highlightable puzzle squares as a 2d array based on the focus state of the interactable puzzle.
@@ -124,54 +124,36 @@ export function getSquareCluesArray(
 }
 
 /**
- * Get the clue panel clues with their solution state, as commanded by `acrossClueStates` /
- * `downClueStates` - InteractablePuzzle has no notion of whether a clue is correct, only what
- * it's been told to display.
- */
-export function getSolvableCluePanelClues(
-  acrossCluePanelClues: CluePanelClue[],
-  downCluePanelClues: CluePanelClue[],
-  acrossClueStates: Map<number, CluePanelSolutionState>,
-  downClueStates: Map<number, CluePanelSolutionState>,
-): { acrossSolvableClues: SolvableCluePanelClue[], downSolvableClues: SolvableCluePanelClue[] } {
-  const withState = (clues: CluePanelClue[], clueStates: Map<number, CluePanelSolutionState>) =>
-    clues.map(clue => ({
-      ...clue,
-      solutionState: clueStates.get(clue.number) ?? CluePanelSolutionState.NOT_COMPLETED,
-    }));
-
-  return {
-    acrossSolvableClues: withState(acrossCluePanelClues, acrossClueStates),
-    downSolvableClues: withState(downCluePanelClues, downClueStates),
-  };
-}
-
-/**
- * Get the guess each clue currently spells out from its squares' fill, and whether every square
- * is filled. Purely derived from the board - carries no notion of correctness.
+ * Get each clue's current guess and completeness, derived from the board, together with its
+ * solution state as commanded by `acrossClueStates` / `downClueStates` - InteractablePuzzle has
+ * no notion of whether a clue is correct, only what it's been told to display.
  */
 export function getClueGuesses(
   acrossCluePanelClues: CluePanelClue[],
   downCluePanelClues: CluePanelClue[],
   puzzleSquaresWithCluesArray: PuzzleSquareWithClues[][],
-): {
-  acrossGuesses: Map<number, { guess: string, isComplete: boolean }>,
-  downGuesses: Map<number, { guess: string, isComplete: boolean }>,
-} {
+  acrossClueStates: ClueSolutionStates,
+  downClueStates: ClueSolutionStates,
+): { acrossClueGuesses: ClueGuesses, downClueGuesses: ClueGuesses } {
   const { acrossMap, downMap } = getMapFromCluesToSquares(puzzleSquaresWithCluesArray);
 
-  const guesses = (clues: CluePanelClue[], cluesToSquares: Map<number, LetterSquareWithCluesAndIdxes[]>) =>
+  const guessesFor = (
+    clues: CluePanelClue[],
+    cluesToSquares: Map<number, LetterSquareWithCluesAndIdxes[]>,
+    clueStates: ClueSolutionStates,
+  ): ClueGuesses =>
     new Map(clues.map(clue => {
       const squares = cluesToSquares.get(clue.number) ?? [];
       return [clue.number, {
         guess: squares.map(square => square.fill).join(''),
         isComplete: squares.length > 0 && squares.every(square => square.fill.length !== 0),
+        solutionState: clueStates.get(clue.number) ?? CluePanelSolutionState.NOT_COMPLETED,
       }];
     }));
 
   return {
-    acrossGuesses: guesses(acrossCluePanelClues, acrossMap),
-    downGuesses: guesses(downCluePanelClues, downMap),
+    acrossClueGuesses: guessesFor(acrossCluePanelClues, acrossMap, acrossClueStates),
+    downClueGuesses: guessesFor(downCluePanelClues, downMap, downClueStates),
   };
 }
 

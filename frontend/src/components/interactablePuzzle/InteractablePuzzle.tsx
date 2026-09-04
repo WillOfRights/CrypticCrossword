@@ -1,123 +1,175 @@
-import './InteractablePuzzle.scss';
 import * as React from 'react';
-import * as z from 'zod';
 
-const { useRef, useEffect, useState, } = React;
+const { useRef, useState, useCallback } = React;
+import type { Dispatch, SetStateAction } from 'react';
 
-import CrosswordGrid from "../crosswordGrid/CrosswordGrid";
+import InteractablePuzzleBoard from './InteractablePuzzleBoard';
 import { PuzzleSquare, SquareType, ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
-import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue, CluePanelSolutionState, } from "../cluePanel/CluePanelTypes";
-import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
-import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
-
-import { getHighlightablePuzzleSquares, getSquareCluesArray, getSolvableCluePanelClues, getHighlightableCluePanelClues, getClueGuesses, } from "./InteractablePuzzleUtils";
-import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
-import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
-import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
-import { useInteractablePuzzleSolving } from "./InteractablePuzzleSolving";
-
-interface InteractablePuzzleProps {
-    initialPuzzleSquares: PuzzleSquare[][],
-    acrossCluePanelClues: CluePanelClue[],
-    downCluePanelClues: CluePanelClue[],
-    acrossClueStates: Map<number, CluePanelSolutionState>,
-    downClueStates: Map<number, CluePanelSolutionState>,
-    onClueGuessChanged: (direction: ClueDirection, clueNumber: number, guess: string, isComplete: boolean) => void,
-}
+import { ClueSolutionStates, } from "./InteractablePuzzleTypes";
+import { useCheckClueGuess, useGameMessages } from "../../connections/game/GameSocket";
+import { GuessResultType, } from '../../schemas/domain/game/GameServerMessage';
+import { ClueDirectionType, } from '../../schemas/domain/puzzle/ClueDirection';
 
 /**
- * An interactable puzzle on the site, including a grid, clues, and hint section. Puzzle content
- * and clue solution state are commanded from above; this component owns only the interaction
- * (focus, keyboard, mouse) and fill state built on top of them.
+ * An interactable puzzle on the site: owns the server connection (grading a clue's guess once
+ * complete, receiving results) and renders `InteractablePuzzleBoard` with the resulting solution
+ * state. The board owns interaction and fill state; this component is the sole authority on
+ * correctness.
  */
-function InteractablePuzzle({
-    initialPuzzleSquares,
-    acrossCluePanelClues,
-    downCluePanelClues,
-    acrossClueStates,
-    downClueStates,
-    onClueGuessChanged,
-}: InteractablePuzzleProps) {
-    const ref = useRef<HTMLDivElement>(null);
-    const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquare[][]>(initialPuzzleSquares);
-    const previousGuessesRef = useRef(new Map<string, string>());
+function InteractablePuzzle() {
+    const { initialPuzzleSquares, acrossCluePanelClues, downCluePanelClues } = _fakeRevealedState();
 
-    const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares, acrossCluePanelClues, downCluePanelClues);
-    const { acrossSolvableClues, downSolvableClues } = getSolvableCluePanelClues(acrossCluePanelClues, downCluePanelClues, acrossClueStates, downClueStates);
+    const checkClueGuess = useCheckClueGuess();
+    const [acrossClueStates, setAcrossClueStates] = useState<ClueSolutionStates>(new Map());
+    const [downClueStates, setDownClueStates] = useState<ClueSolutionStates>(new Map());
 
-    useEffect(() => {
-        const { acrossGuesses, downGuesses } = getClueGuesses(acrossCluePanelClues, downCluePanelClues, puzzleSquareWithCluesArray);
-        _reportChangedGuesses(ClueDirection.ACROSS, acrossGuesses, previousGuessesRef.current, onClueGuessChanged);
-        _reportChangedGuesses(ClueDirection.DOWN, downGuesses, previousGuessesRef.current, onClueGuessChanged);
+    // Per direction, the guess each clue was last sent for grading (or is awaiting grading for),
+    // so an unchanged guess never triggers a repeat request.
+    const gradedGuessesRef = useRef({ across: new Map<number, string>(), down: new Map<number, string>() });
+
+    useGameMessages(message => {
+        switch (message.type) {
+            case 'guessResult':
+                _applyGuessResult(message, gradedGuessesRef.current, setAcrossClueStates, setDownClueStates);
+                break;
+            case 'clueRevealed':
+                // TODO: reveal message.answer and lock the clue's squares once square-locking exists.
+                break;
+            default:
+                message satisfies never;
+        }
     });
 
-    const { focus, navigationActions, } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
-    const { solvingActions, } = useInteractablePuzzleSolving(puzzleSquareWithCluesArray, setPuzzleSquares, focus);
-    const keyboardActions = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus, puzzleSquareWithCluesArray);
-    const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, } = keyboardActions;
-    const mouseActions = useInteractablePuzzleMouse(navigationActions, focus);
+    const onClueGuessChanged = useCallback((direction: ClueDirection, clueNumber: number, guess: string, isComplete: boolean) => {
+        const gradedGuesses = direction === ClueDirection.ACROSS ? gradedGuessesRef.current.across : gradedGuessesRef.current.down;
+        const setClueStates = direction === ClueDirection.ACROSS ? setAcrossClueStates : setDownClueStates;
 
-    // Autofocus interactable puzzle on page load
-    useEffect(() => {
-        ref.current?.focus();
-    }, []);
-
-    const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
-    const { acrossHighlightableClues, downHighlightableClues, } = getHighlightableCluePanelClues(acrossSolvableClues, downSolvableClues, focus);
-
-    const [crypticClueExplanation, setCrypticClueExplanation] = useState<CrypticClueExplanationType | undefined>(undefined);
-
-    // fetch('/explain').then(value => {
-    //     value.json().then(
-    //         res => setCrypticClueExplanation(z.parse(CrypticClueExplanation, res))
-    //     );
-    // });
+        if (!isComplete) {
+            gradedGuesses.delete(clueNumber);
+            setClueStates(prev => (prev.has(clueNumber) ? _withoutEntry(prev, clueNumber) : prev));
+            return;
+        }
+        if (gradedGuesses.get(clueNumber) === guess) {
+            return;
+        }
+        gradedGuesses.set(clueNumber, guess);
+        setClueStates(prev => new Map(prev).set(clueNumber, CluePanelSolutionState.COMPLETED_UNVERIFIED));
+        checkClueGuess({ direction: _toWireClueDirection(direction), clueNumber, guess });
+    }, [checkClueGuess]);
 
     return (
-        <div
-            className={'interactable-puzzle'}
-            ref={ref}
-            tabIndex={0}
-            onKeyDown={onKeyDown}
-            onFocus={onFocusInteractivePuzzle}
-            onBlur={onBlurInteractivePuzzle}
-        >
-            <div className={'grid-container'}>
-                <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} mouseActions={mouseActions} />
-            </div>
-            <div className={'clue-panel-container'}>
-                <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} keyboardActions={keyboardActions} />
-            </div>
-            <div className={'explanation-box-container'}>
-                {
-                    crypticClueExplanation !== undefined ?
-                        <ClueExplanationBox crypticClueExplanation={crypticClueExplanation} />
-                        : null
-                }
-            </div>
-        </div>
+        <InteractablePuzzleBoard
+            initialPuzzleSquares={initialPuzzleSquares}
+            acrossCluePanelClues={acrossCluePanelClues}
+            downCluePanelClues={downCluePanelClues}
+            acrossClueStates={acrossClueStates}
+            downClueStates={downClueStates}
+            onClueGuessChanged={onClueGuessChanged}
+        />
     );
 }
 
 /**
- * Call `onClueGuessChanged` for each clue whose guess differs from what was last reported, then
- * record it as reported. Keeps InteractablePuzzle from re-reporting an unchanged guess every render.
+ * Apply a `guessResult` message to clue state, unless a newer guess has since been submitted for
+ * that clue - in which case the result is stale and is dropped.
  */
-function _reportChangedGuesses(
-    direction: ClueDirection,
-    guesses: Map<number, { guess: string, isComplete: boolean }>,
-    previousGuesses: Map<string, string>,
-    onClueGuessChanged: (direction: ClueDirection, clueNumber: number, guess: string, isComplete: boolean) => void,
+function _applyGuessResult(
+    message: GuessResultType,
+    gradedGuessesByDirection: { across: Map<number, string>, down: Map<number, string> },
+    setAcrossClueStates: Dispatch<SetStateAction<ClueSolutionStates>>,
+    setDownClueStates: Dispatch<SetStateAction<ClueSolutionStates>>,
 ) {
-    guesses.forEach(({ guess, isComplete }, clueNumber) => {
-        const key = `${direction}-${clueNumber}`;
-        if (previousGuesses.get(key) === guess) {
-            return;
-        }
-        previousGuesses.set(key, guess);
-        onClueGuessChanged(direction, clueNumber, guess, isComplete);
-    });
+    const direction = _fromWireClueDirection(message.puzzleClueKey.clueDirection);
+    const { clueNumber } = message.puzzleClueKey;
+
+    const gradedGuesses = direction === ClueDirection.ACROSS ? gradedGuessesByDirection.across : gradedGuessesByDirection.down;
+    if (gradedGuesses.get(clueNumber) !== message.guess) {
+        return;
+    }
+
+    const setClueStates = direction === ClueDirection.ACROSS ? setAcrossClueStates : setDownClueStates;
+    const state = message.isCorrect ? CluePanelSolutionState.VERIFIED_CORRECT : CluePanelSolutionState.VERIFIED_INCORRECT;
+    setClueStates(prev => new Map(prev).set(clueNumber, state));
+}
+
+function _toWireClueDirection(direction: ClueDirection): ClueDirectionType {
+    return direction === ClueDirection.ACROSS ? 'ACROSS' : 'DOWN';
+}
+
+function _fromWireClueDirection(direction: ClueDirectionType): ClueDirection {
+    return direction === 'ACROSS' ? ClueDirection.ACROSS : ClueDirection.DOWN;
+}
+
+function _withoutEntry<K, V>(map: Map<K, V>, key: K): Map<K, V> {
+    const next = new Map(map);
+    next.delete(key);
+    return next;
+}
+
+/**
+ * Stand-in for the solver's revealed-so-far state. Will become props passed to this component,
+ * populated from the server on page load, once puzzle persistence exists.
+ */
+function _fakeRevealedState() {
+    const initialPuzzleSquares: PuzzleSquare[][] = [
+        [
+            { squareType: SquareType.FILLABLE, fill: '', number: 1 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            { squareType: SquareType.FILLABLE, fill: '', number: 2 },
+            SquareType.BLOCK,
+            { squareType: SquareType.FILLABLE, fill: '', number: 3 },
+        ],
+        [
+            { squareType: SquareType.FILLABLE, fill: '', },
+            SquareType.BLOCK,
+            { squareType: SquareType.FILLABLE, fill: '', number: 4 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            { squareType: SquareType.FILLABLE, fill: '', },
+        ],
+        [
+            { squareType: SquareType.FILLABLE, fill: '', number: 5 },
+            { squareType: SquareType.FILLABLE, fill: '', number: 6 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            SquareType.BLOCK,
+            SquareType.BLOCK,
+        ],
+        [
+            SquareType.BLOCK,
+            { squareType: SquareType.FILLABLE, fill: '', },
+            SquareType.BLOCK,
+            { squareType: SquareType.FILLABLE, fill: '', number: 7 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+        ],
+        [
+            { squareType: SquareType.FILLABLE, fill: '', number: 8 },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            { squareType: SquareType.FILLABLE, fill: '', },
+            SquareType.BLOCK,
+            SquareType.BLOCK,
+        ],
+    ];
+
+    const acrossCluePanelClues: CluePanelClue[] = [
+        { clueText: 'DOG', number: 1, },
+        { clueText: 'OWE', number: 4, },
+        { clueText: 'MID', number: 5, },
+        { clueText: 'IS', number: 7, },
+        { clueText: 'ACE', number: 8, },
+    ];
+
+    const downCluePanelClues: CluePanelClue[] = [
+        { clueText: 'DIM', number: 1, },
+        { clueText: 'GOD', number: 2, },
+        { clueText: 'ME', number: 3, },
+        { clueText: 'INC', number: 6, },
+    ];
+
+    return {
+        initialPuzzleSquares,
+        acrossCluePanelClues,
+        downCluePanelClues,
+    };
 }
 
 export default InteractablePuzzle;
