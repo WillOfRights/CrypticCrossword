@@ -66,6 +66,16 @@ type ClueGuess = {
  */
 type ClueGuesses = Map<number, ClueGuess>;
 
+/**
+ * A clue-number-keyed map of `T`, tracked separately per direction. Used wherever something needs
+ * to remember one `T` per clue - e.g. the last guess seen or graded for it - without conflating
+ * an across clue and a down clue that happen to share a number.
+ */
+type CluesByDirection<T> = {
+  across: Map<number, T>,
+  down: Map<number, T>,
+}
+
 export {
   InteractablePuzzleUnfocused,
   InteractablePuzzleFocusedState,
@@ -77,5 +87,6 @@ export {
   ClueSolutionStates,
   ClueGuess,
   ClueGuesses,
+  CluesByDirection,
 }
 

@@ -12,7 +12,7 @@ import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
 import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
 
 import { getHighlightablePuzzleSquares, getSquareCluesArray, getClueGuesses, getHighlightableCluePanelClues, } from "./InteractablePuzzleUtils";
-import { ClueGuesses, ClueSolutionStates, } from "./InteractablePuzzleTypes";
+import { ClueGuesses, ClueSolutionStates, CluesByDirection, } from "./InteractablePuzzleTypes";
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
 import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
@@ -41,7 +41,7 @@ function InteractablePuzzleBoard({
 }: InteractablePuzzleBoardProps) {
     const ref = useRef<HTMLDivElement>(null);
     const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquare[][]>(initialPuzzleSquares);
-    const previousGuessesRef = useRef(new Map<string, string>());
+    const previousGuessesRef = useRef<CluesByDirection<string>>({ across: new Map(), down: new Map() });
 
     const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares, acrossCluePanelClues, downCluePanelClues);
     const { acrossClueGuesses, downClueGuesses } = getClueGuesses(
@@ -51,8 +51,8 @@ function InteractablePuzzleBoard({
     const downSolvableClues = _toSolvableCluePanelClues(downCluePanelClues, downClueGuesses);
 
     useEffect(() => {
-        _reportChangedGuesses(ClueDirection.ACROSS, acrossClueGuesses, previousGuessesRef.current, onClueGuessChanged);
-        _reportChangedGuesses(ClueDirection.DOWN, downClueGuesses, previousGuessesRef.current, onClueGuessChanged);
+        _reportChangedGuesses(ClueDirection.ACROSS, acrossClueGuesses, previousGuessesRef.current.across, onClueGuessChanged);
+        _reportChangedGuesses(ClueDirection.DOWN, downClueGuesses, previousGuessesRef.current.down, onClueGuessChanged);
     });
 
     const { focus, navigationActions, } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
@@ -117,15 +117,14 @@ function _toSolvableCluePanelClues(cluePanelClues: CluePanelClue[], clueGuesses:
 function _reportChangedGuesses(
     direction: ClueDirection,
     clueGuesses: ClueGuesses,
-    previousGuesses: Map<string, string>,
+    previousGuesses: Map<number, string>,
     onClueGuessChanged: (direction: ClueDirection, clueNumber: number, guess: string, isComplete: boolean) => void,
 ) {
     clueGuesses.forEach(({ guess, isComplete }, clueNumber) => {
-        const key = `${direction}-${clueNumber}`;
-        if (previousGuesses.get(key) === guess) {
+        if (previousGuesses.get(clueNumber) === guess) {
             return;
         }
-        previousGuesses.set(key, guess);
+        previousGuesses.set(clueNumber, guess);
         onClueGuessChanged(direction, clueNumber, guess, isComplete);
     });
 }

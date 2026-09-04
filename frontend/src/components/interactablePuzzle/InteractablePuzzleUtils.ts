@@ -1,6 +1,21 @@
 import { CluePanelClue, CluePanelSolutionState, SolvableCluePanelClue, HighlightableCluePanelClue } from "../cluePanel/CluePanelTypes";
 import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight, LetterSquareWithClues, LetterSquareWithCluesAndIdxes } from "../crosswordGrid/CrosswordGridTypes";
 import { ClueGuesses, ClueSolutionStates, InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
+import { ClueDirectionType, } from "../../schemas/domain/puzzle/ClueDirection";
+
+/**
+ * Convert the UI's `ClueDirection` to the wire format's, for sending a guess to the server.
+ */
+export function toWireClueDirection(direction: ClueDirection): ClueDirectionType {
+  return direction === ClueDirection.ACROSS ? 'ACROSS' : 'DOWN';
+}
+
+/**
+ * Convert a wire format `ClueDirection` to the UI's, for a message received from the server.
+ */
+export function fromWireClueDirection(direction: ClueDirectionType): ClueDirection {
+  return direction === 'ACROSS' ? ClueDirection.ACROSS : ClueDirection.DOWN;
+}
 
 /**
  * Get the highlightable puzzle squares as a 2d array based on the focus state of the interactable puzzle.

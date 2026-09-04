@@ -6,10 +6,10 @@ import type { Dispatch, SetStateAction } from 'react';
 import InteractablePuzzleBoard from './InteractablePuzzleBoard';
 import { PuzzleSquare, SquareType, ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
 import { CluePanelClue, CluePanelSolutionState, } from "../cluePanel/CluePanelTypes";
-import { ClueSolutionStates, } from "./InteractablePuzzleTypes";
+import { ClueSolutionStates, CluesByDirection, } from "./InteractablePuzzleTypes";
+import { toWireClueDirection, fromWireClueDirection, } from "./InteractablePuzzleUtils";
 import { useCheckClueGuess, useGameMessages } from "../../connections/game/GameSocket";
 import { GuessResultType, } from '../../schemas/domain/game/GameServerMessage';
-import { ClueDirectionType, } from '../../schemas/domain/puzzle/ClueDirection';
 
 /**
  * An interactable puzzle on the site: owns the server connection (grading a clue's guess once
@@ -26,7 +26,7 @@ function InteractablePuzzle() {
 
     // Per direction, the guess each clue was last sent for grading (or is awaiting grading for),
     // so an unchanged guess never triggers a repeat request.
-    const gradedGuessesRef = useRef({ across: new Map<number, string>(), down: new Map<number, string>() });
+    const gradedGuessesRef = useRef<CluesByDirection<string>>({ across: new Map(), down: new Map() });
 
     useGameMessages(message => {
         switch (message.type) {
@@ -55,7 +55,7 @@ function InteractablePuzzle() {
         }
         gradedGuesses.set(clueNumber, guess);
         setClueStates(prev => new Map(prev).set(clueNumber, CluePanelSolutionState.COMPLETED_UNVERIFIED));
-        checkClueGuess({ direction: _toWireClueDirection(direction), clueNumber, guess });
+        checkClueGuess({ direction: toWireClueDirection(direction), clueNumber, guess });
     }, [checkClueGuess]);
 
     return (
@@ -76,29 +76,27 @@ function InteractablePuzzle() {
  */
 function _applyGuessResult(
     message: GuessResultType,
-    gradedGuessesByDirection: { across: Map<number, string>, down: Map<number, string> },
+    gradedGuessesByDirection: CluesByDirection<string>,
     setAcrossClueStates: Dispatch<SetStateAction<ClueSolutionStates>>,
     setDownClueStates: Dispatch<SetStateAction<ClueSolutionStates>>,
 ) {
-    const direction = _fromWireClueDirection(message.puzzleClueKey.clueDirection);
     const { clueNumber } = message.puzzleClueKey;
+    const direction = fromWireClueDirection(message.puzzleClueKey.clueDirection);
 
-    const gradedGuesses = direction === ClueDirection.ACROSS ? gradedGuessesByDirection.across : gradedGuessesByDirection.down;
+    const gradedGuesses = direction === ClueDirection.ACROSS
+        ? gradedGuessesByDirection.across
+        : gradedGuessesByDirection.down;
     if (gradedGuesses.get(clueNumber) !== message.guess) {
         return;
     }
 
-    const setClueStates = direction === ClueDirection.ACROSS ? setAcrossClueStates : setDownClueStates;
-    const state = message.isCorrect ? CluePanelSolutionState.VERIFIED_CORRECT : CluePanelSolutionState.VERIFIED_INCORRECT;
+    const setClueStates = direction === ClueDirection.ACROSS
+        ? setAcrossClueStates
+        : setDownClueStates;
+    const state = message.isCorrect
+        ? CluePanelSolutionState.VERIFIED_CORRECT
+        : CluePanelSolutionState.VERIFIED_INCORRECT;
     setClueStates(prev => new Map(prev).set(clueNumber, state));
-}
-
-function _toWireClueDirection(direction: ClueDirection): ClueDirectionType {
-    return direction === ClueDirection.ACROSS ? 'ACROSS' : 'DOWN';
-}
-
-function _fromWireClueDirection(direction: ClueDirectionType): ClueDirection {
-    return direction === 'ACROSS' ? ClueDirection.ACROSS : ClueDirection.DOWN;
 }
 
 function _withoutEntry<K, V>(map: Map<K, V>, key: K): Map<K, V> {
