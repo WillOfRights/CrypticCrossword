@@ -124,46 +124,55 @@ export function getSquareCluesArray(
 }
 
 /**
- * Get the clue panel clues with information about their solution state.
+ * Get the clue panel clues with their solution state, as commanded by `acrossClueStates` /
+ * `downClueStates` - InteractablePuzzle has no notion of whether a clue is correct, only what
+ * it's been told to display.
  */
 export function getSolvableCluePanelClues(
   acrossCluePanelClues: CluePanelClue[],
   downCluePanelClues: CluePanelClue[],
-  puzzleSquaresWithCluesArray: PuzzleSquareWithClues[][],
+  acrossClueStates: Map<number, CluePanelSolutionState>,
+  downClueStates: Map<number, CluePanelSolutionState>,
 ): { acrossSolvableClues: SolvableCluePanelClue[], downSolvableClues: SolvableCluePanelClue[] } {
-  const clueIsAnswered = (clueNumber: number, direction: ClueDirection) => {
-    return puzzleSquaresWithCluesArray.every(row => row.every(
-      puzzleSquareWithClue => {
-        if (puzzleSquareWithClue === SquareType.BLOCK) {
-          return true;
-        }
-        else if (direction === ClueDirection.ACROSS && puzzleSquareWithClue.acrossClueNumber === clueNumber) {
-          return puzzleSquareWithClue.fill.length !== 0;
-        }
-        else if (direction === ClueDirection.DOWN && puzzleSquareWithClue.downClueNumber === clueNumber) {
-          return puzzleSquareWithClue.fill.length !== 0;
-        }
-        else {
-          return true;
-        }
-      }
-    ));
+  const withState = (clues: CluePanelClue[], clueStates: Map<number, CluePanelSolutionState>) =>
+    clues.map(clue => ({
+      ...clue,
+      solutionState: clueStates.get(clue.number) ?? CluePanelSolutionState.NOT_COMPLETED,
+    }));
+
+  return {
+    acrossSolvableClues: withState(acrossCluePanelClues, acrossClueStates),
+    downSolvableClues: withState(downCluePanelClues, downClueStates),
   };
+}
 
-  const acrossSolvableClues = acrossCluePanelClues.map(clue => ({
-    ...clue,
-    solutionState: clueIsAnswered(clue.number, ClueDirection.ACROSS)
-      ? CluePanelSolutionState.COMPLETED_UNVERIFIED
-      : CluePanelSolutionState.NOT_COMPLETED,
-  }));
-  const downSolvableClues = downCluePanelClues.map(clue => ({
-    ...clue,
-    solutionState: clueIsAnswered(clue.number, ClueDirection.DOWN)
-      ? CluePanelSolutionState.COMPLETED_UNVERIFIED
-      : CluePanelSolutionState.NOT_COMPLETED,
-  }));
+/**
+ * Get the guess each clue currently spells out from its squares' fill, and whether every square
+ * is filled. Purely derived from the board - carries no notion of correctness.
+ */
+export function getClueGuesses(
+  acrossCluePanelClues: CluePanelClue[],
+  downCluePanelClues: CluePanelClue[],
+  puzzleSquaresWithCluesArray: PuzzleSquareWithClues[][],
+): {
+  acrossGuesses: Map<number, { guess: string, isComplete: boolean }>,
+  downGuesses: Map<number, { guess: string, isComplete: boolean }>,
+} {
+  const { acrossMap, downMap } = getMapFromCluesToSquares(puzzleSquaresWithCluesArray);
 
-  return { acrossSolvableClues, downSolvableClues, };
+  const guesses = (clues: CluePanelClue[], cluesToSquares: Map<number, LetterSquareWithCluesAndIdxes[]>) =>
+    new Map(clues.map(clue => {
+      const squares = cluesToSquares.get(clue.number) ?? [];
+      return [clue.number, {
+        guess: squares.map(square => square.fill).join(''),
+        isComplete: squares.length > 0 && squares.every(square => square.fill.length !== 0),
+      }];
+    }));
+
+  return {
+    acrossGuesses: guesses(acrossCluePanelClues, acrossMap),
+    downGuesses: guesses(downCluePanelClues, downMap),
+  };
 }
 
 /**

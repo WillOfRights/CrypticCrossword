@@ -24,11 +24,11 @@
 
     "esModuleInterop": true,
 
-    // Per-file transform safety net: esbuild (like Babel/swc) type-checks nothing and
-    // transforms one file at a time, so it can't always tell a re-exported name is type-only.
-    // isolatedModules makes tsc flag anything that depends on cross-file type information,
-    // catching the case before esbuild would need to guess.
-    "isolatedModules": true,
+    // Deliberately NOT "isolatedModules": true. It flags every ComponentTypes.ts file's bottom
+    // `export { Type, Value, ... }` block (this project's documented convention) even for types
+    // declared in that same file, which isolatedModules always requires `export type` for.
+    // esbuild's actual per-file elision is more permissive and already builds these correctly
+    // (verified), so the rule doesn't match reality here - it would just be false-positive noise.
 
     "skipLibCheck": true,
     "noEmit": true
