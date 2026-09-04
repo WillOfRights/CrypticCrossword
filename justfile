@@ -62,6 +62,11 @@ lint:
     @echo "Linting backend"
     cd backend && ./mvnw spotbugs:check
 
+typecheck:
+    @echo "Type-checking frontend"
+    cd frontend && npx tsc --noEmit
+    @echo "Frontend type-checked"
+
 # --- Housekeeping ---
 
 _ensure-run-dir:
