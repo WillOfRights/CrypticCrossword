@@ -1,5 +1,5 @@
 import { CluePanelClue, CluePanelSolutionState, SolvableCluePanelClue, HighlightableCluePanelClue } from "../cluePanel/CluePanelTypes";
-import { PuzzleSquare, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight, LetterSquareWithClues, LetterSquareWithCluesAndIdxes } from "../crosswordGrid/CrosswordGridTypes";
+import { PuzzleSquareContent, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight, LetterSquareType, LetterSquareWithClues, LetterSquareWithCluesAndIdxes } from "../crosswordGrid/CrosswordGridTypes";
 import { ClueGuesses, ClueSolutionStates, InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 import { ClueDirectionType, } from "../../schemas/domain/puzzle/ClueDirection";
 
@@ -76,12 +76,17 @@ export function getHighlightablePuzzleSquares(
 }
 
 /**
- * Convert the given puzzle squares into their representation mapping each square to the clues it is part of.
+ * Combine the stored puzzle squares with the clues they are part of and the solution states those
+ * clues have been commanded into, giving the squares every layer above this one works from. A
+ * square takes its type from either of its clues, so the letters of a clue verified correct are
+ * fixed for the clue crossing them too.
  */
 export function getSquareCluesArray(
-  puzzleSquares: PuzzleSquare[][],
+  puzzleSquares: PuzzleSquareContent[][],
   acrossCluePanelClues: CluePanelClue[],
-  downCluePanelClues: CluePanelClue[])
+  downCluePanelClues: CluePanelClue[],
+  acrossClueStates: ClueSolutionStates,
+  downClueStates: ClueSolutionStates)
   : PuzzleSquareWithClues[][] {
   const puzzleSquareWithCluesArray: PuzzleSquareWithClues[][] = [];
 
@@ -122,11 +127,12 @@ export function getSquareCluesArray(
         downClueNumber = _getNumberIfMatchesClue(current.number, downCluePanelClues);
       }
 
+      const squareType = _getSquareType(acrossClueNumber, acrossClueStates, downClueNumber, downClueStates);
       if (acrossClueNumber !== undefined) {
-        rowSquareClues.push({ ...current, acrossClueNumber, downClueNumber });
+        rowSquareClues.push({ ...current, squareType, acrossClueNumber, downClueNumber });
       }
       else if (downClueNumber !== undefined) {
-        rowSquareClues.push({ ...current, acrossClueNumber, downClueNumber });
+        rowSquareClues.push({ ...current, squareType, acrossClueNumber, downClueNumber });
       }
       else {
         throw new Error(`Square at ${rowIdx}, ${colIdx} does not have a corresponding clue in either direction`);
@@ -260,6 +266,31 @@ export function isLatinLetter(key: string) { return /^[A-Za-z]$/.test(key) };
  * Check if a letter is a capital latin letter.
  */
 export function isCapitalLatinLetterOrEmpty(key: string) { return /^[A-Z]?$/.test(key) };
+
+/**
+ * Private helper for the type a letter square takes from the solution states of the clues it is
+ * part of. A clue verified correct wins over one verified incorrect crossing it - that letter has
+ * been confirmed either way. The single point to extend when another solution state (such as a clue
+ * revealed to every solver) should give a square its own type.
+ */
+function _getSquareType(
+  acrossClueNumber: number | undefined,
+  acrossClueStates: ClueSolutionStates,
+  downClueNumber: number | undefined,
+  downClueStates: ClueSolutionStates): LetterSquareType {
+  const isClueInState = (clueNumber: number | undefined, clueStates: ClueSolutionStates, state: CluePanelSolutionState) =>
+    clueNumber !== undefined && clueStates.get(clueNumber) === state;
+
+  if (isClueInState(acrossClueNumber, acrossClueStates, CluePanelSolutionState.VERIFIED_CORRECT)
+    || isClueInState(downClueNumber, downClueStates, CluePanelSolutionState.VERIFIED_CORRECT)) {
+    return SquareType.VERIFIED;
+  }
+  if (isClueInState(acrossClueNumber, acrossClueStates, CluePanelSolutionState.VERIFIED_INCORRECT)
+    || isClueInState(downClueNumber, downClueStates, CluePanelSolutionState.VERIFIED_INCORRECT)) {
+    return SquareType.VERIFIED_INCORRECT;
+  }
+  return SquareType.FILLABLE;
+}
 
 /**
  * Private helper to get a number, iff there is a matching clue panel clue with that number.

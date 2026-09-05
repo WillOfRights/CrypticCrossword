@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, } from "react";
 
-import { ClueDirection, PuzzleSquare, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
+import { ClueDirection, EditableSquare, PuzzleSquareContent, PuzzleSquareWithClues, SquareType, } from "../crosswordGrid/CrosswordGridTypes";
 import { ForwardsOrBackwards, InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 import { isCapitalLatinLetterOrEmpty, } from "./InteractablePuzzleUtils";
 import { findNextFollowingClues, } from "./InteractablePuzzleNavigationUtils";
@@ -15,7 +15,7 @@ type InteractablePuzzleSolvingActions = {
  */
 function useInteractablePuzzleSolving(
   puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
-  setPuzzleSquares: Dispatch<SetStateAction<PuzzleSquare[][]>>,
+  setPuzzleSquares: Dispatch<SetStateAction<PuzzleSquareContent[][]>>,
   focus: InteractablePuzzleFocus)
   : { solvingActions: InteractablePuzzleSolvingActions } {
 
@@ -27,23 +27,16 @@ function useInteractablePuzzleSolving(
       return;
     }
 
-    setPuzzleSquares(prev => {
-      const currentSquare = prev[focus.rowIdx][focus.colIdx];
-      if (currentSquare === SquareType.BLOCK) {
-        // Current square is a block and not enterable
-        return prev;
-      }
-      if (currentSquare.squareType === SquareType.VERIFIED) {
-        // Current square is already verified correct
-        return prev;
-      }
+    const currentSquare = _getEditableSquareAt(puzzleSquareWithCluesArray, focus.rowIdx, focus.colIdx);
+    if (currentSquare === undefined) {
+      // Current square is a block, or is verified correct, and so is not enterable
+      return;
+    }
 
-      return _efficient2DUpdate(prev, focus.rowIdx, focus.colIdx, {
-        squareType: SquareType.FILLABLE,
-        fill: character,
-        number: currentSquare.number,
-      });
-    });
+    setPuzzleSquares(prev => _efficient2DUpdate(prev, focus.rowIdx, focus.colIdx, {
+      fill: character,
+      number: currentSquare.number,
+    }));
   };
   const deleteLastCharacter = (clueDirection: ClueDirection) => {
     if (focus === InteractablePuzzleUnfocused.NOT_FOCUSED) {
@@ -63,29 +56,25 @@ function useInteractablePuzzleSolving(
     if (positionOfPreviousSquare === undefined) {
       return;
     }
-    setPuzzleSquares(prev => {
-      const previousSquare = prev[positionOfPreviousSquare.rowIdx][positionOfPreviousSquare.colIdx];
-      if (previousSquare === SquareType.BLOCK) {
-        // This case is not possible since we are guaranteed not to find a block from the function,
-        // but this satisfies ts requirements.
-        return prev;
-      }
-      if (previousSquare.squareType === SquareType.VERIFIED) {
-        // Current square is already verified correct
-        return prev;
-      }
+    const previousSquare = _getEditableSquareAt(
+      puzzleSquareWithCluesArray,
+      positionOfPreviousSquare.rowIdx,
+      positionOfPreviousSquare.colIdx);
+    if (previousSquare === undefined) {
+      // Previous square is verified correct, and so cannot be cleared. It is never a block, since
+      // the search above is guaranteed not to find one.
+      return;
+    }
 
-      return _efficient2DUpdate(
-        prev,
-        positionOfPreviousSquare.rowIdx,
-        positionOfPreviousSquare.colIdx,
-        {
-          squareType: SquareType.FILLABLE,
-          fill: '',
-          number: previousSquare.number,
-        }
-      );
-    });
+    setPuzzleSquares(prev => _efficient2DUpdate(
+      prev,
+      positionOfPreviousSquare.rowIdx,
+      positionOfPreviousSquare.colIdx,
+      {
+        fill: '',
+        number: previousSquare.number,
+      }
+    ));
   }
 
   return {
@@ -97,9 +86,25 @@ function useInteractablePuzzleSolving(
 }
 
 /**
+ * Private helper to get the square at the given position, iff its fill may be edited. A block has
+ * no fill to edit, and a square verified correct has been fixed by the server - through either of
+ * its clues, so a solved clue's letters are fixed for the clue crossing them too.
+ */
+function _getEditableSquareAt(
+  puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
+  rowIdx: number,
+  colIdx: number): EditableSquare | undefined {
+  const puzzleSquareWithClues = puzzleSquareWithCluesArray[rowIdx][colIdx];
+  if (puzzleSquareWithClues === SquareType.BLOCK || puzzleSquareWithClues.squareType === SquareType.VERIFIED) {
+    return undefined;
+  }
+  return puzzleSquareWithClues;
+}
+
+/**
  * Private helper to make an efficient update of one entry in a 2D state array.
  */
-function _efficient2DUpdate(prev: PuzzleSquare[][], rowIdx: number, colIdx: number, value: PuzzleSquare) {
+function _efficient2DUpdate(prev: PuzzleSquareContent[][], rowIdx: number, colIdx: number, value: PuzzleSquareContent) {
   // Copy old state, and replace fill of focused square with character
   const next = [...prev];
   next[rowIdx] = [...next[rowIdx]];

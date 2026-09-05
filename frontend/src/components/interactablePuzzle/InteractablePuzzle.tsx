@@ -4,7 +4,7 @@ const { useRef, useState, useCallback } = React;
 import type { Dispatch, SetStateAction } from 'react';
 
 import InteractablePuzzleBoard from './InteractablePuzzleBoard';
-import { PuzzleSquare, SquareType, ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
+import { PuzzleSquareContent, SquareType, ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
 import { CluePanelClue, CluePanelSolutionState, } from "../cluePanel/CluePanelTypes";
 import { ClueSolutionStates, CluesByDirection, } from "./InteractablePuzzleTypes";
 import { toWireClueDirection, fromWireClueDirection, } from "./InteractablePuzzleUtils";
@@ -34,7 +34,8 @@ function InteractablePuzzle() {
                 _applyGuessResult(message, gradedGuessesRef.current, setAcrossClueStates, setDownClueStates);
                 break;
             case 'clueRevealed':
-                // TODO: reveal message.answer and lock the clue's squares once square-locking exists.
+                // TODO: fill message.answer into the board and mark the clue verified correct here,
+                // which locks its squares just as this solver's own correct answer does.
                 break;
             default:
                 message satisfies never;
@@ -110,39 +111,39 @@ function _withoutEntry<K, V>(map: Map<K, V>, key: K): Map<K, V> {
  * populated from the server on page load, once puzzle persistence exists.
  */
 function _fakeRevealedState() {
-    const initialPuzzleSquares: PuzzleSquare[][] = [
+    const initialPuzzleSquares: PuzzleSquareContent[][] = [
         [
-            { squareType: SquareType.FILLABLE, fill: '', number: 1 },
-            { squareType: SquareType.FILLABLE, fill: '', },
-            { squareType: SquareType.FILLABLE, fill: '', number: 2 },
+            { fill: '', number: 1 },
+            { fill: '', },
+            { fill: '', number: 2 },
             SquareType.BLOCK,
-            { squareType: SquareType.FILLABLE, fill: '', number: 3 },
+            { fill: '', number: 3 },
         ],
         [
-            { squareType: SquareType.FILLABLE, fill: '', },
+            { fill: '', },
             SquareType.BLOCK,
-            { squareType: SquareType.FILLABLE, fill: '', number: 4 },
-            { squareType: SquareType.FILLABLE, fill: '', },
-            { squareType: SquareType.FILLABLE, fill: '', },
+            { fill: '', number: 4 },
+            { fill: '', },
+            { fill: '', },
         ],
         [
-            { squareType: SquareType.FILLABLE, fill: '', number: 5 },
-            { squareType: SquareType.FILLABLE, fill: '', number: 6 },
-            { squareType: SquareType.FILLABLE, fill: '', },
+            { fill: '', number: 5 },
+            { fill: '', number: 6 },
+            { fill: '', },
             SquareType.BLOCK,
             SquareType.BLOCK,
         ],
         [
             SquareType.BLOCK,
-            { squareType: SquareType.FILLABLE, fill: '', },
+            { fill: '', },
             SquareType.BLOCK,
-            { squareType: SquareType.FILLABLE, fill: '', number: 7 },
-            { squareType: SquareType.FILLABLE, fill: '', },
+            { fill: '', number: 7 },
+            { fill: '', },
         ],
         [
-            { squareType: SquareType.FILLABLE, fill: '', number: 8 },
-            { squareType: SquareType.FILLABLE, fill: '', },
-            { squareType: SquareType.FILLABLE, fill: '', },
+            { fill: '', number: 8 },
+            { fill: '', },
+            { fill: '', },
             SquareType.BLOCK,
             SquareType.BLOCK,
         ],

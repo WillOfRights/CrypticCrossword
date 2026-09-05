@@ -5,7 +5,7 @@ import * as z from 'zod';
 const { useRef, useEffect, useState, } = React;
 
 import CrosswordGrid from "../crosswordGrid/CrosswordGrid";
-import { PuzzleSquare, ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
+import { PuzzleSquareContent, ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue, } from "../cluePanel/CluePanelTypes";
 import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
@@ -19,7 +19,7 @@ import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
 import { useInteractablePuzzleSolving } from "./InteractablePuzzleSolving";
 
 interface InteractablePuzzleBoardProps {
-    initialPuzzleSquares: PuzzleSquare[][],
+    initialPuzzleSquares: PuzzleSquareContent[][],
     acrossCluePanelClues: CluePanelClue[],
     downCluePanelClues: CluePanelClue[],
     acrossClueStates: ClueSolutionStates,
@@ -40,10 +40,12 @@ function InteractablePuzzleBoard({
     onClueGuessChanged,
 }: InteractablePuzzleBoardProps) {
     const ref = useRef<HTMLDivElement>(null);
-    const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquare[][]>(initialPuzzleSquares);
+    const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquareContent[][]>(initialPuzzleSquares);
     const previousGuessesRef = useRef<CluesByDirection<string>>({ across: new Map(), down: new Map() });
 
-    const puzzleSquareWithCluesArray = getSquareCluesArray(puzzleSquares, acrossCluePanelClues, downCluePanelClues);
+    const puzzleSquareWithCluesArray = getSquareCluesArray(
+        puzzleSquares, acrossCluePanelClues, downCluePanelClues, acrossClueStates, downClueStates,
+    );
     const { acrossClueGuesses, downClueGuesses } = getClueGuesses(
         acrossCluePanelClues, downCluePanelClues, puzzleSquareWithCluesArray, acrossClueStates, downClueStates,
     );

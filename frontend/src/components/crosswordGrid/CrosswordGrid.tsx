@@ -65,7 +65,7 @@ function _createGridSquares(puzzleSquares: PuzzleSquareWithHighlight[][], mouseA
             const isBlock = puzzleSquare === SquareType.BLOCK;
             gridSquares.push(
                 <GridSquare
-                    isBlock={isBlock}
+                    squareType={isBlock ? SquareType.BLOCK : puzzleSquare.squareType}
                     fill={isBlock ? undefined : puzzleSquare.fill}
                     number={isBlock ? undefined : puzzleSquare.number}
                     offsetDim={{ x: colIdx, y: rowIdx }}

@@ -16,13 +16,64 @@ enum SquareType {
      * A square that has been verified to be correct.
      */
     VERIFIED,
+    /**
+     * A square in a clue that has been verified to be incorrect. Still fillable - the solver has to
+     * be able to correct it.
+     */
+    VERIFIED_INCORRECT,
 }
 
-type LetterSquare = {
-    squareType: SquareType.FILLABLE | SquareType.VERIFIED,
+/**
+ * A letter square as it is stored, holding the letter itself and any clue number, with nothing
+ * about how it has been solved. Solve information reaches a square only by being combined in to
+ * make a `LetterSquare`.
+ */
+type LetterSquareContent = {
     fill: String,
     number?: number,
 }
+
+/**
+ * Type representing a square in a puzzle as it is stored, with no solve information.
+ */
+type PuzzleSquareContent = LetterSquareContent | SquareType.BLOCK;
+
+/**
+ * A letter square nothing is yet known about, which may be freely edited.
+ */
+type FillableSquare = LetterSquareContent & {
+    squareType: SquareType.FILLABLE,
+}
+
+/**
+ * A letter square in a clue verified incorrect, which may still be edited.
+ */
+type VerifiedIncorrectSquare = LetterSquareContent & {
+    squareType: SquareType.VERIFIED_INCORRECT,
+}
+
+/**
+ * A letter square verified correct, whose fill is fixed.
+ */
+type VerifiedSquare = LetterSquareContent & {
+    squareType: SquareType.VERIFIED,
+}
+
+/**
+ * A letter square whose fill may still be edited, as opposed to one verified correct. Solving works
+ * from this type, so a square that cannot be edited has to be narrowed away before one is reached.
+ */
+type EditableSquare = FillableSquare | VerifiedIncorrectSquare;
+
+/**
+ * Type representing a letter square combined with how the clues it belongs to have been solved.
+ */
+type LetterSquare = EditableSquare | VerifiedSquare;
+
+/**
+ * The type a letter square takes once combined with how its clues have been solved.
+ */
+type LetterSquareType = LetterSquare['squareType'];
 
 /**
  * Type representing a square in a puzzle, not including information on user interactions.
@@ -100,7 +151,11 @@ type PuzzleSquareWithHighlight = SquareType.BLOCK | LetterSquare & {
 export {
     ClueDirection,
     SquareType,
+    LetterSquareContent,
+    PuzzleSquareContent,
+    EditableSquare,
     LetterSquare,
+    LetterSquareType,
     PuzzleSquare,
     PuzzleSquareWithClues,
     LetterSquareWithClues,
