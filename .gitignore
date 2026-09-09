@@ -37,4 +37,7 @@ target/
 /frontend/node_modules
 /backend/src/main/resources/static/js/bundle
 /backend/baseline-crypticCrossword.xml
+
+## CLAUDE ##
 CLAUDE.md
+.mcp.json
