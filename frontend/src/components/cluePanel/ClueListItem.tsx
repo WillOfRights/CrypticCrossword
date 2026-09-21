@@ -28,7 +28,7 @@ function ClueListItem({ cluePanelClue, clueDirection, mouseActions }: ClueListIt
 
     useEffect(() => {
         if (isHighlighted) {
-            itemRef.current?.scrollIntoView({ block: 'nearest', });
+            itemRef.current?.scrollIntoView({ block: 'nearest', behavior: "smooth" });
         }
     }, [isHighlighted]);
 
