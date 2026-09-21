@@ -1,5 +1,5 @@
 import { CluePanelClue, CluePanelSolutionState, SolvableCluePanelClue, HighlightableCluePanelClue } from "../cluePanel/CluePanelTypes";
-import { PuzzleSquareContent, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight, LetterSquareType, LetterSquareWithClues, LetterSquareWithCluesAndIdxes } from "../crosswordGrid/CrosswordGridTypes";
+import { PuzzleSquareContent, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight, LetterSquareType, LetterSquareWithClues, LetterSquareWithCluesAndIdxes, ClueBorder } from "../crosswordGrid/CrosswordGridTypes";
 import { ClueGuesses, ClueSolutionStates, InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 import { ClueDirectionType, } from "../../schemas/domain/puzzle/ClueDirection";
 
@@ -179,6 +179,47 @@ export function getClueGuesses(
 }
 
 /**
+ * Get the `ClueBorder`s given the current puzzle and clue information, specifically getting the borders which relate
+ * to incorrect clues.
+ */
+export function getIncorrectClueBorders(
+  puzzleSquaresWithCluesArray: PuzzleSquareWithClues[][],
+  acrossCluePanelClues: CluePanelClue[],
+  downCluePanelClues: CluePanelClue[],
+  acrossClueStates: ClueSolutionStates,
+  downClueStates: ClueSolutionStates,
+): ClueBorder[] {
+  const { acrossMap, downMap } = getMapFromCluesToSquares(puzzleSquaresWithCluesArray);
+
+  const bordersFor = (
+    clues: CluePanelClue[],
+    cluesToSquares: Map<number, LetterSquareWithCluesAndIdxes[]>,
+    clueStates: ClueSolutionStates,
+    direction: ClueDirection,
+  ): ClueBorder[] =>
+    clues.flatMap(clue => {
+      if (clueStates.get(clue.number) !== CluePanelSolutionState.VERIFIED_INCORRECT) {
+        return [];
+      }
+      const squares = cluesToSquares.get(clue.number) ?? [];
+      if (squares.length === 0) {
+        return [];
+      }
+      return [{
+        direction,
+        startRowIdx: squares[0].rowIdx,
+        startColIdx: squares[0].colIdx,
+        length: squares.length,
+      }];
+    });
+
+  return [
+    ...bordersFor(acrossCluePanelClues, acrossMap, acrossClueStates, ClueDirection.ACROSS),
+    ...bordersFor(downCluePanelClues, downMap, downClueStates, ClueDirection.DOWN),
+  ];
+}
+
+/**
  * Attach each clue's solution state, as derived by `getClueGuesses`, to the clue panel clue itself.
  */
 export function toSolvableCluePanelClues(cluePanelClues: CluePanelClue[], clueGuesses: ClueGuesses): SolvableCluePanelClue[] {
@@ -216,7 +257,8 @@ export function getHighlightableCluePanelClues(
 }
 
 /**
- * Function to invert puzzle squares with clues into a map from clues to their respective squares.
+ * Function to invert puzzle squares with clues into a map from clues to their respective squares. Returns in order
+ * of their appearance in the puzzle in both maps from left to right and top to bottom.
  */
 export function getMapFromCluesToSquares(puzzleSquareWithCluesArray: PuzzleSquareWithClues[][])
   : { acrossMap: Map<number, LetterSquareWithCluesAndIdxes[]>, downMap: Map<number, LetterSquareWithCluesAndIdxes[]> } {

@@ -93,6 +93,29 @@ export function findFirstUnfilledSquareInClue(
 }
 
 /**
+ * Simple helper to find the first square in a given clue (regardless of whether it is filled).
+ */
+export function findFirstSquareInClue(
+    puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
+    clueDirection: ClueDirection,
+    clueNumber: number,
+) {
+  const { acrossMap, downMap } = getMapFromCluesToSquares(puzzleSquareWithCluesArray);
+  const map = clueDirection === ClueDirection.ACROSS
+      ? acrossMap
+      : downMap;
+  const clueArray = map.get(clueNumber);
+  if (clueArray === undefined) {
+    // Clue does not exist in direction
+    return undefined;
+  }
+
+  const square = clueArray[0];
+  const { rowIdx, colIdx } = square;
+  return { rowIdx, colIdx, direction: clueDirection };
+}
+
+/**
  * Helper to find the next square from the current position in the given direction of clues.
  * The specified square should be part of a clue in the given direction (not a block or only
  * in the other direction).

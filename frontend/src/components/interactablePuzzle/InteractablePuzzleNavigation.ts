@@ -5,7 +5,16 @@ import { ClueDirection, PuzzleSquareWithClues, SquareType, } from "../crosswordG
 import { invertDirection, } from "../crosswordGrid/CrosswordGridUtils";
 
 import { ForwardsOrBackwards, InteractablePuzzleFocus, InteractablePuzzleFocusedState, InteractablePuzzleFocusState, InteractablePuzzleUnfocused, NavigationDirection } from "./InteractablePuzzleTypes";
-import { NAVIGATION_DIRECTION_TO_CLUE_DIRECTION, deriveInteractablePuzzleFocus, whenFocused, isValidProposedFocusedStateFromArray, getPositionOfNextSquareInDirection, findNextFollowingClues, findFirstUnfilledSquareInClue, } from "./InteractablePuzzleNavigationUtils";
+import {
+  NAVIGATION_DIRECTION_TO_CLUE_DIRECTION,
+  deriveInteractablePuzzleFocus,
+  whenFocused,
+  isValidProposedFocusedStateFromArray,
+  getPositionOfNextSquareInDirection,
+  findNextFollowingClues,
+  findFirstUnfilledSquareInClue,
+  findFirstSquareInClue,
+} from "./InteractablePuzzleNavigationUtils";
 
 type InteractablePuzzleNavigationActions = {
   /**
@@ -91,7 +100,7 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
   : { focus: InteractablePuzzleFocus, navigationActions: InteractablePuzzleNavigationActions } {
   const [focusState, setFocusState] = useState<InteractablePuzzleFocusState>(DEFAULT_FOCUS_STATE);
 
-  // Reused helpers that require scoped variables
+  // --------- Reused helpers that require scoped variables ------------
 
   const asCallback = (action: (...args: any[]) => React.SetStateAction<InteractablePuzzleFocusState>) =>
     (...args: any[]) => {
@@ -185,6 +194,10 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
     clueNumber: number,
     ignoredSquare: { rowIdx: number, colIdx: number } | undefined = undefined
   ) => findFirstUnfilledSquareInClue(puzzleSquareWithCluesArray, clueDirection, clueNumber, ignoredSquare);
+  const moveToFirstFn = (
+      clueDirection: ClueDirection,
+      clueNumber: number,
+  ) => findFirstSquareInClue(puzzleSquareWithCluesArray, clueDirection, clueNumber);
   const moveToFirstUnfilledForFocusFn = (f: InteractablePuzzleFocusedState) => {
     const focusedSquare = puzzleSquareWithCluesArray[f.rowIdx][f.colIdx];
     if (focusedSquare === SquareType.BLOCK) {
@@ -208,7 +221,9 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
     }
     return withHardFocusedState(firstUnfilledInClue);
   }
-  // Navigation actions
+
+  // ----------------- Navigation actions -----------------------
+
   const unfocus = () => InteractablePuzzleUnfocused.NOT_FOCUSED;
 
   const focusFirstSquare = () => (f: InteractablePuzzleFocusState) => {
@@ -253,7 +268,8 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
     clueDirection: ClueDirection,
     clueNumber: number,
   ) => whenFocused((f: InteractablePuzzleFocusedState) => {
-    const firstUnfilledInClue = moveToFirstUnfilledFn(clueDirection, clueNumber);
+    const firstUnfilledInClue = moveToFirstUnfilledFn(clueDirection, clueNumber)
+        || moveToFirstFn(clueDirection, clueNumber);
     if (firstUnfilledInClue === undefined) {
       return f;
     }

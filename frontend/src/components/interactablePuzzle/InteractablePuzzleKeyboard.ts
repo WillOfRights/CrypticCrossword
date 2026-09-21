@@ -3,12 +3,12 @@ import { ForwardsOrBackwards, InteractablePuzzleFocus, InteractablePuzzleUnfocus
 import { isLatinLetter, } from "./InteractablePuzzleUtils";
 import { InteractablePuzzleSolvingActions } from "./InteractablePuzzleSolving";
 import { ClueDirection, PuzzleSquareWithClues, SquareType } from "../crosswordGrid/CrosswordGridTypes";
+import React from "react";
 
 type PuzzleKeyboardActions = {
   onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
   onFocusInteractivePuzzle: (e: React.FocusEvent<HTMLElement>) => void;
   onBlurInteractivePuzzle: (e: React.FocusEvent<HTMLElement>) => void;
-  onClickClue: (clueDirection: ClueDirection, clueNumber: number) => (e: React.MouseEvent) => void;
 };
 
 const KEY_TO_NAVIGATION_DIRECTION = {
@@ -82,13 +82,8 @@ function useInteractablePuzzleKeyboard(
     }
   };
 
-  const onClickClue = (clueDirection: ClueDirection, clueNumber: number) => {
-    return () => {
-      navigationActions.moveToFirstUnfilledSquareInClue(clueDirection, clueNumber);
-    };
-  };
 
-  return { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, onClickClue, };
+  return { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, };
 }
 
 export {

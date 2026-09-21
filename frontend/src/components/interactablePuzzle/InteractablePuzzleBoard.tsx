@@ -11,7 +11,7 @@ import { CluePanelClue, } from "../cluePanel/CluePanelTypes";
 import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
 import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
 
-import { getHighlightablePuzzleSquares, getSquareCluesArray, getClueGuesses, getHighlightableCluePanelClues, toSolvableCluePanelClues, } from "./InteractablePuzzleUtils";
+import { getHighlightablePuzzleSquares, getSquareCluesArray, getClueGuesses, getHighlightableCluePanelClues, getIncorrectClueBorders, toSolvableCluePanelClues, } from "./InteractablePuzzleUtils";
 import { ClueGuesses, ClueSolutionStates, CluesByDirection, } from "./InteractablePuzzleTypes";
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
@@ -39,7 +39,7 @@ function InteractablePuzzleBoard({
     downClueStates,
     onClueGuessChanged,
 }: InteractablePuzzleBoardProps) {
-    const ref = useRef<HTMLDivElement>(null);
+    const interactablePuzzleRef = useRef<HTMLDivElement | null>(null);
     const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquareContent[][]>(initialPuzzleSquares);
     const previousGuessesRef = useRef<CluesByDirection<string>>({ across: new Map(), down: new Map() });
 
@@ -61,15 +61,18 @@ function InteractablePuzzleBoard({
     const { solvingActions, } = useInteractablePuzzleSolving(puzzleSquareWithCluesArray, setPuzzleSquares, focus);
     const keyboardActions = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus, puzzleSquareWithCluesArray);
     const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, } = keyboardActions;
-    const mouseActions = useInteractablePuzzleMouse(navigationActions, focus);
+    const mouseActions = useInteractablePuzzleMouse(navigationActions, focus, interactablePuzzleRef);
 
     // Autofocus interactable puzzle on page load
     useEffect(() => {
-        ref.current?.focus();
+        interactablePuzzleRef.current?.focus();
     }, []);
 
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
     const { acrossHighlightableClues, downHighlightableClues, } = getHighlightableCluePanelClues(acrossSolvableClues, downSolvableClues, focus);
+    const clueBorders = getIncorrectClueBorders(
+        puzzleSquareWithCluesArray, acrossCluePanelClues, downCluePanelClues, acrossClueStates, downClueStates,
+    );
 
     // const [crypticClueExplanation, setCrypticClueExplanation] = useState<CrypticClueExplanationType | undefined>(undefined);
     //
@@ -82,17 +85,18 @@ function InteractablePuzzleBoard({
     return (
         <div
             className={'interactable-puzzle'}
-            ref={ref}
+            ref={interactablePuzzleRef}
             tabIndex={0}
             onKeyDown={onKeyDown}
             onFocus={onFocusInteractivePuzzle}
             onBlur={onBlurInteractivePuzzle}
+            onMouseDown={(e) => e.preventDefault()}
         >
             <div className={'grid-container'}>
-                <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} mouseActions={mouseActions} />
+                <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} clueBorders={clueBorders} mouseActions={mouseActions} />
             </div>
             <div className={'clue-panel-container'}>
-                <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} keyboardActions={keyboardActions} />
+                <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} mouseActions={mouseActions} />
             </div>
             <div className={'explanation-box-container'}>
                 {/*{*/}
