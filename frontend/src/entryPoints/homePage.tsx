@@ -1,3 +1,5 @@
+import '../styles/global.scss';
+
 import { createRoot } from 'react-dom/client';
 import * as React from 'react';
 

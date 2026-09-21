@@ -1,0 +1,53 @@
+// Shared design tokens and base element styling for the whole app. Imported
+// once per entry point.
+:root {
+    --color-background: #f2ecdc;
+    --color-surface: #fffdf7;
+    --color-text: #1a1a1a;
+    --color-heading: #000080;
+    --color-link: #0000ee;
+    --color-link-visited: #551a8b;
+    --color-accent: #800000;
+    --color-border: #000000;
+    --color-highlight: #ffffcc;
+    --color-focus: #ffd9a0;
+    --color-verified: #000080;
+    --color-verified-incorrect: #800000;
+
+    --font-body: "Times New Roman", Times, Georgia, serif;
+    --font-mono: "Courier New", Courier, monospace;
+}
+
+body {
+    margin: 0;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 16px;
+}
+
+header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+
+    h1 {
+        margin: 10px 0 10px 10px;
+    }
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-body);
+    color: var(--color-heading);
+}
+
+a {
+    color: var(--color-link);
+
+    &:visited {
+        color: var(--color-link-visited);
+    }
+
+    &:hover {
+        color: var(--color-accent);
+    }
+}
