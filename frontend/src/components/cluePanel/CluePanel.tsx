@@ -1,10 +1,10 @@
 import './CluePanel.scss';
 import * as React from 'react';
 
-import { CluePanelSolutionState, HighlightableCluePanelClue, } from "./CluePanelTypes";
+import { HighlightableCluePanelClue, } from "./CluePanelTypes";
 import { ClueDirection } from '../crosswordGrid/CrosswordGridTypes';
-import joinClass from "../util/joinClass";
-import {PuzzleMouseActions} from "../interactablePuzzle/InteractablePuzzleMouse";
+import { PuzzleMouseActions } from "../interactablePuzzle/InteractablePuzzleMouse";
+import ClueListItem from './ClueListItem';
 
 interface CluePanelProps {
     acrossCluePanelClues: HighlightableCluePanelClue[],
@@ -20,45 +20,30 @@ function CluePanel({ acrossCluePanelClues, downCluePanelClues, mouseActions }: C
         <div className={'across-clues'}>
             <ol className={'clue-list'}>
                 {
-                    acrossCluePanelClues.map(cluePanelClue => _renderClue(cluePanelClue, ClueDirection.ACROSS, mouseActions))
+                    acrossCluePanelClues.map(cluePanelClue =>
+                        <ClueListItem
+                            key={cluePanelClue.number}
+                            cluePanelClue={cluePanelClue}
+                            clueDirection={ClueDirection.ACROSS}
+                            mouseActions={mouseActions}
+                        />)
                 }
             </ol>
         </div>
         <div className={'down-clues'}>
             <ol className={'clue-list'}>
                 {
-                    downCluePanelClues.map(cluePanelClue => _renderClue(cluePanelClue, ClueDirection.DOWN, mouseActions))
+                    downCluePanelClues.map(cluePanelClue =>
+                        <ClueListItem
+                            key={cluePanelClue.number}
+                            cluePanelClue={cluePanelClue}
+                            clueDirection={ClueDirection.DOWN}
+                            mouseActions={mouseActions}
+                        />)
                 }
             </ol>
         </div>
     </div>;
-}
-
-/**
- * Render a clue as a list item.
- */
-function _renderClue(
-    cluePanelClue: HighlightableCluePanelClue,
-    clueDirection: ClueDirection,
-    mouseActions: PuzzleMouseActions) {
-    const { isHighlighted, solutionState, } = cluePanelClue;
-    const className = joinClass(
-        isHighlighted && 'highlighted',
-        solutionState === CluePanelSolutionState.VERIFIED_CORRECT && 'verified',
-        solutionState === CluePanelSolutionState.VERIFIED_INCORRECT && 'verified-incorrect',
-    );
-    const onClick= mouseActions.onClickClue(clueDirection, cluePanelClue.number);
-
-    return (
-        <li
-            key={cluePanelClue.number}
-            value={cluePanelClue.number}
-            className={className}
-            onClick={onClick}
-        >
-            {cluePanelClue.number}. {cluePanelClue.clueText}
-        </li>
-    );
 }
 
 export default CluePanel;
