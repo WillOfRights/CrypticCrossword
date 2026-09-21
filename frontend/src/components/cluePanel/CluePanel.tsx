@@ -1,32 +1,33 @@
 import './CluePanel.scss';
 import * as React from 'react';
 
-import { HighlightableCluePanelClue, } from "./CluePanelTypes";
-import { PuzzleKeyboardActions } from '../interactablePuzzle/InteractablePuzzleKeyboard';
+import { CluePanelSolutionState, HighlightableCluePanelClue, } from "./CluePanelTypes";
 import { ClueDirection } from '../crosswordGrid/CrosswordGridTypes';
+import joinClass from "../util/joinClass";
+import {PuzzleMouseActions} from "../interactablePuzzle/InteractablePuzzleMouse";
 
 interface CluePanelProps {
     acrossCluePanelClues: HighlightableCluePanelClue[],
     downCluePanelClues: HighlightableCluePanelClue[],
-    keyboardActions: PuzzleKeyboardActions,
+    mouseActions: PuzzleMouseActions,
 }
 
 /**
  * The panel to view across and down clues for a puzzle.
  */
-function CluePanel({ acrossCluePanelClues, downCluePanelClues, keyboardActions }: CluePanelProps) {
+function CluePanel({ acrossCluePanelClues, downCluePanelClues, mouseActions }: CluePanelProps) {
     return <div className={'clue-panel'}>
         <div className={'across-clues'}>
             <ol className={'clue-list'}>
                 {
-                    acrossCluePanelClues.map(cluePanelClue => _renderClue(cluePanelClue, ClueDirection.ACROSS, keyboardActions))
+                    acrossCluePanelClues.map(cluePanelClue => _renderClue(cluePanelClue, ClueDirection.ACROSS, mouseActions))
                 }
             </ol>
         </div>
         <div className={'down-clues'}>
             <ol className={'clue-list'}>
                 {
-                    downCluePanelClues.map(cluePanelClue => _renderClue(cluePanelClue, ClueDirection.DOWN, keyboardActions))
+                    downCluePanelClues.map(cluePanelClue => _renderClue(cluePanelClue, ClueDirection.DOWN, mouseActions))
                 }
             </ol>
         </div>
@@ -39,10 +40,14 @@ function CluePanel({ acrossCluePanelClues, downCluePanelClues, keyboardActions }
 function _renderClue(
     cluePanelClue: HighlightableCluePanelClue,
     clueDirection: ClueDirection,
-    keyboardActions: PuzzleKeyboardActions) {
-    const { isHighlighted, } = cluePanelClue;
-    const className = isHighlighted ? 'highlighted' : '';
-    const onClick = keyboardActions.onClickClue(clueDirection, cluePanelClue.number);
+    mouseActions: PuzzleMouseActions) {
+    const { isHighlighted, solutionState, } = cluePanelClue;
+    const className = joinClass(
+        isHighlighted && 'highlighted',
+        solutionState === CluePanelSolutionState.VERIFIED_CORRECT && 'verified',
+        solutionState === CluePanelSolutionState.VERIFIED_INCORRECT && 'verified-incorrect',
+    );
+    const onClick= mouseActions.onClickClue(clueDirection, cluePanelClue.number);
 
     return (
         <li
