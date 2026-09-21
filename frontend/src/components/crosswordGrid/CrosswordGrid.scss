@@ -4,45 +4,56 @@
   .grid-square {
     rect {
       &.block {
-        fill: #000000;
+        fill: var(--color-border);
       }
       &.clue-highlighted {
-        fill: #fffddd;
+        fill: var(--color-highlight);
       }
       &.focused-square {
-        fill: #f9c9be;
+        fill: var(--color-focus);
       }
       &.fillable {
-        fill: #ffffff;
+        fill: var(--color-surface);
       }
     }
     .grid-square-number {
-      font-family: Roboto, Sans-serif;
+      font-family: var(--font-mono);
       font-size: 10px;
       color: #555555;
     }
     .grid-square-fill {
-      font-family: Roboto, Sans-serif;
+      font-family: var(--font-body);
       font-size: 16px;
-      fill: #000000;
+      fill: var(--color-text);
 
       text-anchor: middle;
 
       &.verified {
-        fill: #1a56db;
-      }
-      &.verified-incorrect {
-        fill: #c81e1e;
+        fill: var(--color-verified);
+        font-weight: bold;
       }
     }
   }
 
   .grid-border {
    fill: none;
-    stroke: #000000;
+    stroke: var(--color-border);
   }
-  
+
   .grid-lines {
     stroke: #555555;
+  }
+
+  .incorrect-clue-border {
+    fill: url(#incorrect-hatch);
+    pointer-events: none;
+    stroke: var(--color-verified-incorrect);
+    stroke-width: 2px;
+    stroke-dasharray: 4px 3px;
+  }
+  .incorrect-hatch-line {
+    stroke: var(--color-verified-incorrect);
+    stroke-width: 1px;
+    opacity: 0.35;
   }
 }

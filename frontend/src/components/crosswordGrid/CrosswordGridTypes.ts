@@ -148,6 +148,17 @@ type PuzzleSquareWithHighlight = SquareType.BLOCK | LetterSquare & {
     highlightType?: HighlightType,
 }
 
+/**
+ * A border framing the squares corresponding to a clue that is answered incorrectly. Since incorrectness refers to
+ * the whole clue, it is possible that an individual letter in these squares is still answered correctly.
+ */
+type ClueBorder = {
+    direction: ClueDirection,
+    startRowIdx: number,
+    startColIdx: number,
+    length: number,
+}
+
 export {
     ClueDirection,
     SquareType,
@@ -162,4 +173,5 @@ export {
     LetterSquareWithCluesAndIdxes,
     HighlightType,
     PuzzleSquareWithHighlight,
+    ClueBorder,
 };

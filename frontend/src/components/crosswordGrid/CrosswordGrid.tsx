@@ -3,16 +3,22 @@ import * as React from 'react';
 import { PuzzleMouseActions } from '../interactablePuzzle/InteractablePuzzleMouse';
 
 import { GRID_BORDER_OUTLINE_SIZE, GRID_SQUARE_SIZE, } from './CrosswordGridConstants';
-import { PuzzleSquareWithHighlight, SquareType, } from './CrosswordGridTypes';
+import { ClueBorder, PuzzleSquareWithHighlight, SquareType, } from './CrosswordGridTypes';
 import GridSquare from './GridSquare';
 import GridBorder from './GridBorder';
 import GridLines from './GridLines';
+import GridClueBorders from './GridClueBorders';
 
 interface CrosswordGridProps {
     /**
      * 2D Array of all the puzzle squares, first stored by column and then row.
      */
     puzzleSquares: PuzzleSquareWithHighlight[][],
+
+    /**
+     * Borders of clues that need to be outlined to show their status in the puzzle.
+     */
+    clueBorders?: ClueBorder[],
 
     /**
      * Mouse control actions relating to using the crossword grid. Undefined if this is not interactive.
@@ -23,7 +29,7 @@ interface CrosswordGridProps {
 /**
  * A stylized crossword grid, for use as part of an interactive puzzle or decoratively.
  */
-function CrosswordGrid({ puzzleSquares, mouseActions }: CrosswordGridProps) {
+function CrosswordGrid({ puzzleSquares, clueBorders = [], mouseActions }: CrosswordGridProps) {
     if (!_validateProps({ puzzleSquares, mouseActions })) {
         return '';
     }
@@ -37,6 +43,7 @@ function CrosswordGrid({ puzzleSquares, mouseActions }: CrosswordGridProps) {
         {_createGridSquares(puzzleSquares, mouseActions)}
         <GridLines squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
         <GridBorder squaresWidth={squaresWidth} squaresHeight={squaresHeight} />
+        <GridClueBorders clueBorders={clueBorders} />
     </svg>;
 }
 

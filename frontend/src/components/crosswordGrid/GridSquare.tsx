@@ -57,16 +57,7 @@ function GridSquare({ squareType, fill, number, offsetDim, highlightType, onClic
         fillClassName = 'fillable';
     }
 
-    let textClassName: string;
-    if (squareType === SquareType.VERIFIED) {
-        textClassName = 'grid-square-fill verified';
-    }
-    else if (squareType === SquareType.VERIFIED_INCORRECT) {
-        textClassName = 'grid-square-fill verified-incorrect';
-    }
-    else {
-        textClassName = 'grid-square-fill';
-    }
+    const textClassName = squareType === SquareType.VERIFIED ? 'grid-square-fill verified' : 'grid-square-fill';
 
     return <g className={'grid-square'} transform={`translate(${translateX} ${translateY})`} onClick={onClick} >
         <rect width={GRID_SQUARE_SIZE} height={GRID_SQUARE_SIZE} className={fillClassName}></rect>
