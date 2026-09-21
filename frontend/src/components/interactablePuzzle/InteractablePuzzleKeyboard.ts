@@ -1,8 +1,8 @@
-import { InteractablePuzzleNavigationActions, NavigationDirection, } from "./InteractablePuzzleNavigation";
-import { ForwardsOrBackwards, InteractablePuzzleFocus, InteractablePuzzleUnfocused } from "./InteractablePuzzleTypes";
-import { isLatinLetter, } from "./InteractablePuzzleUtils";
-import { InteractablePuzzleSolvingActions } from "./InteractablePuzzleSolving";
-import { ClueDirection, PuzzleSquareWithClues, SquareType } from "../crosswordGrid/CrosswordGridTypes";
+import {InteractablePuzzleNavigationActions, NavigationDirection,} from "./InteractablePuzzleNavigation";
+import {InteractablePuzzleFocus, InteractablePuzzleUnfocused} from "./InteractablePuzzleTypes";
+import {isLatinLetter,} from "./InteractablePuzzleUtils";
+import {InteractablePuzzleSolvingActions} from "./InteractablePuzzleSolving";
+import {ClueDirection, PuzzleSquareWithClues, SquareType} from "../crosswordGrid/CrosswordGridTypes";
 import React from "react";
 
 type PuzzleKeyboardActions = {
@@ -59,7 +59,7 @@ function useInteractablePuzzleKeyboard(
     }
     else if (e.key === "Backspace" || e.key === "Delete") {
       // Delete a letter
-      if (e.key === "Backspace" && square.fill.length === 0) {
+      if (e.key === "Backspace" && (square.fill.length === 0 || square.squareType === SquareType.VERIFIED)) {
         solvingActions.deleteLastCharacter(focus.direction);
         navigationActions.moveToLastCharacter();
       }
