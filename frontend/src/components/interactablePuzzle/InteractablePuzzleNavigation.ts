@@ -267,14 +267,14 @@ function useInteractablePuzzleNavigation(puzzleSquareWithCluesArray: PuzzleSquar
   const moveToFirstUnfilledSquareInClue = (
     clueDirection: ClueDirection,
     clueNumber: number,
-  ) => whenFocused((f: InteractablePuzzleFocusedState) => {
+  ) => (f: InteractablePuzzleFocusState) => {
     const firstUnfilledInClue = moveToFirstUnfilledFn(clueDirection, clueNumber)
         || moveToFirstFn(clueDirection, clueNumber);
     if (firstUnfilledInClue === undefined) {
       return f;
     }
     return withProposedFocusedState(firstUnfilledInClue, f);
-  });
+  };
 
   const moveToFirstUnfilledSquareForFocus = () => whenFocused(moveToFirstUnfilledForFocusFn);
 

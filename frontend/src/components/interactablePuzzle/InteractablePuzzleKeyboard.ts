@@ -7,8 +7,6 @@ import React from "react";
 
 type PuzzleKeyboardActions = {
   onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
-  onFocusInteractivePuzzle: (e: React.FocusEvent<HTMLElement>) => void;
-  onBlurInteractivePuzzle: (e: React.FocusEvent<HTMLElement>) => void;
 };
 
 const KEY_TO_NAVIGATION_DIRECTION = {
@@ -69,21 +67,7 @@ function useInteractablePuzzleKeyboard(
     }
   };
 
-  const onFocusInteractivePuzzle = (e: React.FocusEvent<HTMLElement>) => {
-    if (focus === InteractablePuzzleUnfocused.NOT_FOCUSED) {
-      navigationActions.focusFirstSquare();
-    }
-  };
-
-  const onBlurInteractivePuzzle = (e: React.FocusEvent<HTMLElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-      // Focus left the interactive puzzle
-      navigationActions.unfocus();
-    }
-  };
-
-
-  return { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, };
+  return { onKeyDown, };
 }
 
 export {
