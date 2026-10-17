@@ -9,7 +9,7 @@ type PuzzleKeyboardActions = {
   onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
 };
 
-const KEY_TO_NAVIGATION_DIRECTION = {
+const KEY_TO_NAVIGATION_DIRECTION: Partial<Record<string, NavigationDirection>> = {
   ["ArrowRight"]: NavigationDirection.RIGHT,
   ["ArrowDown"]: NavigationDirection.DOWN,
   ["ArrowLeft"]: NavigationDirection.LEFT,
