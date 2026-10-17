@@ -7,9 +7,9 @@ interface UseWebSocketProps {
 }
 
 const defaultOptions: UseWebSocketOptions = {
-    onMessage: (data: any) => {},
+    onMessage: () => {},
     onOpen: () => {},
-    onClose: (event: CloseEvent) => {},
+    onClose: () => {},
     reconnect: true,
 };
 
@@ -26,8 +26,8 @@ function useWebSocket({url, options = defaultOptions} : UseWebSocketProps) {
         callbacksRef.current = { onMessage, onOpen, onClose };
     });
 
-    const wsRef = useRef(null);
-    const reconnectTimer = useRef(null);
+    const wsRef = useRef<WebSocket | null>(null);
+    const reconnectTimer = useRef<number | undefined>(undefined);
     const attemptRef = useRef(0);
 
     const connect = useCallback(() => {
@@ -75,7 +75,7 @@ function useWebSocket({url, options = defaultOptions} : UseWebSocketProps) {
         };
     }, [connect]);
 
-    const send = useCallback((data) => {
+    const send = useCallback((data: unknown) => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify(data));
         }

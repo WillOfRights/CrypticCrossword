@@ -159,7 +159,7 @@ export function findNextFollowingClues(
   }
 
   // Reusable scoped functions
-  const increment = (idx) => {
+  const increment = (idx: number) => {
     if (forwardsOrBackwards === ForwardsOrBackwards.FORWARDS) {
       return idx + 1;
     }
@@ -300,7 +300,7 @@ export function whenFocused(updateFn: (f: InteractablePuzzleFocusedState) => Int
 
     return updateFn(f);
   };
-};
+}
 
 /**
  * Given a proposed state f, return if the state is valid for the given puzzle with clues array.
