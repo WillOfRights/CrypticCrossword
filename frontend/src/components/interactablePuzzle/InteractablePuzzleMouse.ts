@@ -1,6 +1,6 @@
 import { InteractablePuzzleNavigationActions, } from "./InteractablePuzzleNavigation";
 import { InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
-import React, {RefObject} from "react";
+import React from "react";
 import {ClueDirection} from "../crosswordGrid/CrosswordGridTypes";
 
 type PuzzleMouseActions = {
@@ -17,13 +17,10 @@ type PuzzleMouseActions = {
  */
 function useInteractablePuzzleMouse(
     navigationActions: InteractablePuzzleNavigationActions,
-    focus: InteractablePuzzleFocus,
-    interactablePuzzleRef: RefObject<HTMLDivElement | null>):
+    focus: InteractablePuzzleFocus):
   PuzzleMouseActions {
   const onSquareClickForSquare = (rowIdx: number, colIdx: number) => {
     return () => {
-      interactablePuzzleRef.current?.focus();
-
       if (focus !== InteractablePuzzleUnfocused.NOT_FOCUSED && focus.rowIdx === rowIdx && focus.colIdx === colIdx) {
         navigationActions.toggleDirection();
       }
@@ -37,8 +34,6 @@ function useInteractablePuzzleMouse(
     return () => {
       const sel = window.getSelection();
       if (sel && !sel.isCollapsed) return;
-
-      interactablePuzzleRef.current?.focus();
 
       navigationActions.moveToFirstUnfilledSquareInClue(clueDirection, clueNumber);
     };

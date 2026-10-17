@@ -1,0 +1,33 @@
+.clue-answer {
+  display: flex;
+  width: fit-content;
+  margin: 10px auto 0;
+  border: 2px solid var(--color-border);
+
+  .clue-answer-square {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-right: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--color-text);
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &.focused {
+      background-color: var(--color-focus);
+    }
+
+    &.verified {
+      color: var(--color-verified);
+      font-weight: bold;
+    }
+  }
+}

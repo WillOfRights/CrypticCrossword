@@ -8,13 +8,23 @@ import CrosswordGrid from "../crosswordGrid/CrosswordGrid";
 import { PuzzleSquareContent, ClueDirection, } from "../crosswordGrid/CrosswordGridTypes";
 import CluePanel from "../cluePanel/CluePanel";
 import { CluePanelClue, } from "../cluePanel/CluePanelTypes";
+import ClueAnswer from "../clueAnswer/ClueAnswer";
 import { ClueExplanationBox, } from '../clueExplanation/ClueExplanationBox';
 import { CrypticClueExplanation, CrypticClueExplanationType, } from '../../schemas/domain/puzzle/CrypticClueExplanation'
 
-import { getHighlightablePuzzleSquares, getSquareCluesArray, getClueGuesses, getHighlightableCluePanelClues, getIncorrectClueBorders, toSolvableCluePanelClues, } from "./InteractablePuzzleUtils";
+import {
+    getHighlightablePuzzleSquares,
+    getSquareCluesArray,
+    getClueGuesses,
+    getHighlightableCluePanelClues,
+    getIncorrectClueBorders,
+    toSolvableCluePanelClues,
+    getFocusedClueAnswerSquares,
+} from "./InteractablePuzzleUtils";
 import { ClueGuesses, ClueSolutionStates, CluesByDirection, } from "./InteractablePuzzleTypes";
 import { useInteractablePuzzleNavigation } from "./InteractablePuzzleNavigation";
 import { useInteractablePuzzleKeyboard } from "./InteractablePuzzleKeyboard";
+import { useKeyboardInputFocusSync } from "./InteractablePuzzleFocusSync";
 import { useInteractablePuzzleMouse } from "./InteractablePuzzleMouse";
 import { useInteractablePuzzleSolving } from "./InteractablePuzzleSolving";
 
@@ -39,7 +49,8 @@ function InteractablePuzzleBoard({
     downClueStates,
     onClueGuessChanged,
 }: InteractablePuzzleBoardProps) {
-    const interactablePuzzleRef = useRef<HTMLDivElement | null>(null);
+    const keyboardInputRef = useRef<HTMLInputElement | null>(null);
+    const cluePanelContainerRef = useRef<HTMLDivElement | null>(null);
     const [puzzleSquares, setPuzzleSquares] = useState<PuzzleSquareContent[][]>(initialPuzzleSquares);
     const previousGuessesRef = useRef<CluesByDirection<string>>({ across: new Map(), down: new Map() });
 
@@ -59,20 +70,23 @@ function InteractablePuzzleBoard({
 
     const { focus, navigationActions, } = useInteractablePuzzleNavigation(puzzleSquareWithCluesArray);
     const { solvingActions, } = useInteractablePuzzleSolving(puzzleSquareWithCluesArray, setPuzzleSquares, focus);
-    const keyboardActions = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus, puzzleSquareWithCluesArray);
-    const { onKeyDown, onFocusInteractivePuzzle, onBlurInteractivePuzzle, } = keyboardActions;
-    const mouseActions = useInteractablePuzzleMouse(navigationActions, focus, interactablePuzzleRef);
-
-    // Autofocus interactable puzzle on page load
-    useEffect(() => {
-        interactablePuzzleRef.current?.focus();
-    }, []);
+    const { onKeyDown, } = useInteractablePuzzleKeyboard(navigationActions, solvingActions, focus, puzzleSquareWithCluesArray);
+    const mouseActions = useInteractablePuzzleMouse(navigationActions, focus);
+    const keyboardInputFocusProps = useKeyboardInputFocusSync(navigationActions, focus, keyboardInputRef);
 
     const highlightablePuzzleSquares = getHighlightablePuzzleSquares(puzzleSquareWithCluesArray, focus);
     const { acrossHighlightableClues, downHighlightableClues, } = getHighlightableCluePanelClues(acrossSolvableClues, downSolvableClues, focus);
     const clueBorders = getIncorrectClueBorders(
         puzzleSquareWithCluesArray, acrossCluePanelClues, downCluePanelClues, acrossClueStates, downClueStates,
     );
+    const clueAnswerSquares = getFocusedClueAnswerSquares(puzzleSquareWithCluesArray, focus);
+
+    const onMouseDownInteractablePuzzle = (e: React.MouseEvent<HTMLDivElement>) => {
+        // Keep DOM focus on the keyboard input, except in the clue panel so clue text stays selectable
+        if (!cluePanelContainerRef.current?.contains(e.target as Node)) {
+            e.preventDefault();
+        }
+    };
 
     // const [crypticClueExplanation, setCrypticClueExplanation] = useState<CrypticClueExplanationType | undefined>(undefined);
     //
@@ -85,17 +99,24 @@ function InteractablePuzzleBoard({
     return (
         <div
             className={'interactable-puzzle'}
-            ref={interactablePuzzleRef}
-            tabIndex={0}
-            onKeyDown={onKeyDown}
-            onFocus={onFocusInteractivePuzzle}
-            onBlur={onBlurInteractivePuzzle}
-            onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={onMouseDownInteractablePuzzle}
         >
+            <input
+                className={'keyboard-input'}
+                ref={keyboardInputRef}
+                type={'text'}
+                value={''}
+                onChange={() => {}}
+                autoComplete={'off'}
+                spellCheck={false}
+                onKeyDown={onKeyDown}
+                {...keyboardInputFocusProps}
+            />
             <div className={'grid-container'}>
                 <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} clueBorders={clueBorders} mouseActions={mouseActions} />
+                <ClueAnswer squares={clueAnswerSquares} />
             </div>
-            <div className={'clue-panel-container'}>
+            <div className={'clue-panel-container'} ref={cluePanelContainerRef}>
                 <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} mouseActions={mouseActions} />
             </div>
             <div className={'explanation-box-container'}>
