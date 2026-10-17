@@ -79,6 +79,8 @@ function InteractablePuzzleBoard({
     const clueBorders = getIncorrectClueBorders(
         puzzleSquareWithCluesArray, acrossCluePanelClues, downCluePanelClues, acrossClueStates, downClueStates,
     );
+    const clueAnswerSquares = getFocusedClueAnswerSquares(puzzleSquareWithCluesArray, focus);
+
     const onMouseDownInteractablePuzzle = (e: React.MouseEvent<HTMLDivElement>) => {
         // Keep DOM focus on the keyboard input, except in the clue panel so clue text stays selectable
         if (!cluePanelContainerRef.current?.contains(e.target as Node)) {
@@ -112,6 +114,7 @@ function InteractablePuzzleBoard({
             />
             <div className={'grid-container'}>
                 <CrosswordGrid puzzleSquares={highlightablePuzzleSquares} clueBorders={clueBorders} mouseActions={mouseActions} />
+                <ClueAnswer squares={clueAnswerSquares} />
             </div>
             <div className={'clue-panel-container'} ref={cluePanelContainerRef}>
                 <CluePanel acrossCluePanelClues={acrossHighlightableClues} downCluePanelClues={downHighlightableClues} mouseActions={mouseActions} />

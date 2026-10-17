@@ -2,6 +2,7 @@ import { CluePanelClue, CluePanelSolutionState, SolvableCluePanelClue, Highlight
 import { PuzzleSquareContent, HighlightType, PuzzleSquareWithClues, SquareType, ClueDirection, PuzzleSquareWithHighlight, LetterSquareType, LetterSquareWithClues, LetterSquareWithCluesAndIdxes, ClueBorder } from "../crosswordGrid/CrosswordGridTypes";
 import { ClueGuesses, ClueSolutionStates, InteractablePuzzleFocus, InteractablePuzzleUnfocused, } from "./InteractablePuzzleTypes";
 import { ClueDirectionType, } from "../../schemas/domain/puzzle/ClueDirection";
+import { ClueAnswerSquare, } from "../clueAnswer/ClueAnswerTypes";
 
 /**
  * Convert the UI's `ClueDirection` to the wire format's, for sending a guess to the server.
@@ -217,6 +218,25 @@ export function getIncorrectClueBorders(
     ...bordersFor(acrossCluePanelClues, acrossMap, acrossClueStates, ClueDirection.ACROSS),
     ...bordersFor(downCluePanelClues, downMap, downClueStates, ClueDirection.DOWN),
   ];
+}
+
+/**
+ * Get the clue answer squares to display from the puzzle and it's focus state.
+ */
+export function getFocusedClueAnswerSquares(
+  puzzleSquareWithCluesArray: PuzzleSquareWithClues[][],
+  focus: InteractablePuzzleFocus,
+): ClueAnswerSquare[] {
+  if (focus === InteractablePuzzleUnfocused.NOT_FOCUSED) {
+    return [];
+  }
+  const { acrossMap, downMap } = getMapFromCluesToSquares(puzzleSquareWithCluesArray);
+  const cluesToSquares = focus.direction === ClueDirection.ACROSS ? acrossMap : downMap;
+  return (cluesToSquares.get(focus.clueNumber) ?? []).map(square => ({
+    fill: square.fill,
+    squareType: square.squareType,
+    isFocused: square.rowIdx === focus.rowIdx && square.colIdx === focus.colIdx,
+  }));
 }
 
 /**
